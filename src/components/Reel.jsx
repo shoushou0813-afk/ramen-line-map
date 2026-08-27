@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { stationName } from "../data/lines";
+import Stars from "./Stars";
 
 // 路線に関係なく、新しい順に全投稿を流し見するタブ
 export default function Reel() {
@@ -38,7 +39,9 @@ export default function Reel() {
           <div className="reel-station">{stationName(p.station_id)}</div>
           <div className="reel-shop">{p.shop_name}</div>
           <span className="tag">{p.genre}</span>
+          <Stars value={p.rating ?? 0} />
           {p.memo && <p className="post-memo">{p.memo}</p>}
+          {p.image_url && <img className="post-image" src={p.image_url} alt={p.shop_name} loading="lazy" />}
           <div className="post-foot">
             <span>{p.user_name}</span>
           </div>

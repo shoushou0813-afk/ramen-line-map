@@ -4,12 +4,10 @@ import { LINES, LINE_ORDER } from "./data/lines";
 import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
 import Reel from "./components/Reel";
-import Game from "./components/Game";
 
 const MODES = [
   { id: "map", label: "路線図" },
   { id: "reel", label: "リール" },
-  { id: "game", label: "ゲーム" },
 ];
 
 export default function App() {
@@ -155,13 +153,6 @@ export default function App() {
         <section className="card">
           <h2 className="card-title">リール</h2>
           <Reel />
-        </section>
-      )}
-
-      {mode === "game" && (
-        <section className="card">
-          <h2 className="card-title">ゲーム</h2>
-          <Game counts={counts} />
         </section>
       )}
     </div>

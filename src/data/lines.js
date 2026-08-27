@@ -109,7 +109,4 @@ export function stationName(id) {
   return STATION_NAMES[id] ?? id;
 }
 
-// ゲームで使う「全駅の一覧」。重複を潰した状態で持っておく
-export const ALL_STATIONS = Object.entries(STATION_NAMES).map(([id, name]) => ({ id, name }));
-
 export const GENRES = ["家系", "二郎系", "醤油", "味噌", "塩", "つけ麺", "その他"];

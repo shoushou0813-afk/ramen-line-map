@@ -6,7 +6,7 @@
 
 | 名前 | 種類 | 説明 |
 | --- | --- | --- |
-| `LINES` | `export const` (object) | 路線ごとの定義(`id`, `name`, `viewBox`, `loop`, `stations`)。`stations` の各駅は `id`, `name`, `x`, `y`, `label`, （必要なら）`corner` を持つ。座標は地理的正確さより見やすさ優先で手打ち。 |
+| `LINES` | `export const` (object) | 路線ごとの定義(`id`, `name`, `viewBox`, `loop`, `stations`)。`stations` の各駅は `id`, `name`, `x`, `y`, `label`, （必要なら）`corner` を持つ。 |
 | `LINE_ORDER` | `export const` (array) | タブなどに表示する路線の順番。`["chuo", "yamanote", "denentoshi", "toyoko"]`。オブジェクトのキー順に依存しないよう明示的に定義。 |
 | `STATION_NAMES` | `const` (object, モジュール内限定) | 駅ID→駅名の逆引き辞書。`LINE_ORDER` の順に全路線の駅を走査して構築。複数路線をまたいで同じIDの駅がある場合は最初に見つかった名前を採用。 |
 | `stationName(id)` | `export function` | `STATION_NAMES` から駅名を引く。見つからない場合は `id` をそのまま返す。 |

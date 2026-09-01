@@ -92,10 +92,43 @@ export const LINES = {
       { id: "musashikosugi", name: "武蔵小杉", x: 90, y: 200, label: "bottom" },
     ],
   },
+  sobu: {
+    id: "sobu",
+    name: "総武線",
+    viewBox: "0 0 680 540",
+    loop: false,
+    // 6駅ごとに折り返す蛇行レイアウト。段の境目は必ず同じxで繋いで縦線にし、斜め線を避けている
+    stations: [
+      { id: "mitaka", name: "三鷹", x: 90, y: 70, label: "top" },
+      { id: "kichijoji", name: "吉祥寺", x: 190, y: 70, label: "top" },
+      { id: "nishiogikubo", name: "西荻窪", x: 290, y: 70, label: "top" },
+      { id: "ogikubo", name: "荻窪", x: 390, y: 70, label: "top" },
+      { id: "asagaya", name: "阿佐ヶ谷", x: 490, y: 70, label: "top" },
+      { id: "koenji", name: "高円寺", x: 590, y: 70, label: "top" },
+      { id: "nakano", name: "中野", x: 590, y: 200, label: "right" },
+      { id: "higashinakano", name: "東中野", x: 490, y: 200, label: "bottom" },
+      { id: "okubo", name: "大久保", x: 390, y: 200, label: "bottom" },
+      { id: "shinjuku", name: "新宿", x: 290, y: 200, label: "bottom" },
+      { id: "yoyogi", name: "代々木", x: 190, y: 200, label: "bottom" },
+      { id: "sendagaya", name: "千駄ケ谷", x: 90, y: 200, label: "bottom" },
+      { id: "shinanomachi", name: "信濃町", x: 90, y: 330, label: "left" },
+      { id: "yotsuya", name: "四ツ谷", x: 190, y: 330, label: "top" },
+      { id: "ichigaya", name: "市ケ谷", x: 290, y: 330, label: "top" },
+      { id: "iidabashi", name: "飯田橋", x: 390, y: 330, label: "top" },
+      { id: "suidobashi", name: "水道橋", x: 490, y: 330, label: "top" },
+      { id: "ochanomizu", name: "御茶ノ水", x: 590, y: 330, label: "top" },
+      { id: "akihabara", name: "秋葉原", x: 590, y: 460, label: "right" },
+      { id: "asakusabashi", name: "浅草橋", x: 490, y: 460, label: "bottom" },
+      { id: "ryogoku", name: "両国", x: 390, y: 460, label: "bottom" },
+      { id: "kinshicho", name: "錦糸町", x: 290, y: 460, label: "bottom" },
+      { id: "shinkoiwa", name: "新小岩", x: 190, y: 460, label: "bottom" },
+      { id: "chiba", name: "千葉", x: 90, y: 460, label: "bottom" },
+    ],
+  },
 };
 
 // タブに出す順番。オブジェクトのキー順に頼ると環境で変わる可能性があるので明示する
-export const LINE_ORDER = ["chuo", "yamanote", "denentoshi", "toyoko"];
+export const LINE_ORDER = ["chuo", "yamanote", "denentoshi", "toyoko", "sobu"];
 
 // 駅 id から駅名を引く用。路線をまたいで重複する駅は最初に見つかった方でいい
 const STATION_NAMES = {};

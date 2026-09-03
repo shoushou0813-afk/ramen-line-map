@@ -372,3 +372,14 @@ body {
     transition: none !important;
   }
 }
+
+/* .env 未設定時の案内 */
+.setup-code {
+  background: var(--chip);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+}

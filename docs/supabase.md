@@ -9,9 +9,9 @@
 | `supabase` | `export const` | `createClient(url, anonKey)` で作られるSupabaseクライアント。以降すべてのファイルはこの1つのインスタンス経由でDB・認証・Storageにアクセスする。`url` / `anonKey` は `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` から取得する。 |
 | `isConfigured` | `export const` (boolean) | 環境変数が両方揃っているか。`createClient` は空文字を渡すと例外を投げて画面が真っ白になるため、未設定時はダミー値でクライアントを作り、この値を見て `main.jsx` が `SetupNotice` を表示する。 |
 
-## src/lib/storage.js
+## src/lib/image.js
 
-投稿写真のアップロード・削除まわり。保存パスの組み立てをこのファイルに閉じ込めている（RLSのポリシーが「パスの1階層目 = 自分の user_id」を前提にしているため）。
+投稿写真まわりのうち、通信を伴わない部分。保存パスの組み立てをここに閉じ込めている（RLSのポリシーが「パスの1階層目 = 自分の user_id」を前提にしているため）。Supabaseクライアントを読み込まないので、単体テストがネットワーク層に依存しない。
 
 | 名前 | 種類 | 説明 |
 | --- | --- | --- |
@@ -19,7 +19,15 @@
 | `MAX_IMAGE_BYTES` / `ALLOWED_IMAGE_TYPES` | `export const` | 5MB、JPEG / PNG / WebP。`schema.sql` のバケット設定と同じ値を持たせている。 |
 | `validateImage(file)` | `export function` | アップロード前の検証。問題があれば表示用のメッセージを、無ければ `null` を返す純粋関数。バケット側にも同じ制限があるので、ここは通信前に気づかせるためのもの。 |
 | `storagePathFromUrl(url)` | `export function` | 公開URLから storage 上のパス（`{user_id}/xxxx.jpg`）を取り出す。削除に必要。`URL` で解析し、バケット名以降を取り出してデコードする。解析できなければ `null`。 |
-| `uploadImage(file, userId)` | `export async function` | `{userId}/{ランダムなuuid}.{拡張子}` のパスでアップロードし、公開URLを返す。拡張子はファイル名ではなくContent-Typeから決める（拡張子なしのファイルでパスが壊れないように）。 |
+| `extensionFor(type)` | `export function` | Content-Type から拡張子を決める。ファイル名由来だと拡張子なしのファイルでパスが壊れるため。 |
+
+## src/lib/storage.js
+
+Storage との通信部分。検証とパスの組み立ては `image.js` 側にある。
+
+| 名前 | 種類 | 説明 |
+| --- | --- | --- |
+| `uploadImage(file, userId)` | `export async function` | `{userId}/{ランダムなuuid}.{拡張子}` のパスでアップロードし、公開URLを返す。 |
 | `removeImage(url)` | `export async function` | 公開URLからパスを求めてStorageから削除する。 |
 
 ## src/App.jsx

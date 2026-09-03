@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
-import { uploadImage, validateImage } from "../lib/storage";
+import { validateImage } from "../lib/image";
+import { uploadImage } from "../lib/storage";
 import { GENRES } from "../data/lines";
 
 // DB 側の check 制約と同じ値。片方だけ変えると保存時に弾かれるので注意

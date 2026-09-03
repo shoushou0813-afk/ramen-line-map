@@ -3,9 +3,10 @@ import {
   ALLOWED_IMAGE_TYPES,
   BUCKET,
   MAX_IMAGE_BYTES,
+  extensionFor,
   storagePathFromUrl,
   validateImage,
-} from "./storage";
+} from "./image";
 
 describe("validateImage", () => {
   const file = (type, size) => ({ type, size });
@@ -54,5 +55,19 @@ describe("storagePathFromUrl", () => {
 
   it("バケット直下にファイル名が無ければ null を返す", () => {
     expect(storagePathFromUrl(base)).toBeNull();
+  });
+});
+
+describe("extensionFor", () => {
+  it("Content-Type から拡張子を決める", () => {
+    expect(extensionFor("image/png")).toBe("png");
+    expect(extensionFor("image/webp")).toBe("webp");
+    expect(extensionFor("image/jpeg")).toBe("jpg");
+  });
+
+  it("許可済みの形式すべてで拡張子が付く（パスが壊れない）", () => {
+    for (const type of ALLOWED_IMAGE_TYPES) {
+      expect(extensionFor(type)).toMatch(/^[a-z]+$/);
+    }
   });
 });

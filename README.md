@@ -130,9 +130,14 @@ npm run build
   路線を足した時にここが落ちれば、画面を開く前に気づける
 - `src/components/LineMap.test.js` … 線分の組み立て（`corner` での折れ、環状線の閉じ）と
   駅名ラベルの位置計算
-- `src/lib/storage.test.js` … アップロード前の検証と、公開URLからのパス抽出
+- `src/lib/image.test.js` … アップロード前の検証と、公開URLからのパス抽出
 
 上記3つは GitHub Actions で push / PR ごとに回している（`.github/workflows/ci.yml`）。
+
+画像まわりは、検証やパスの組み立て（`lib/image.js`）と通信（`lib/storage.js`）を分けてある。
+最初は1ファイルにまとめていたが、純粋関数のテストが Supabase クライアントの生成を
+引きずってしまい、ローカル（Node 22）では通るのにCI（Node 20）だけ落ちた。
+テストしたい部分がI/Oに依存しない形になっていなかったのが原因だったので、分割した。
 
 ## 詰まった点と解決
 
@@ -219,7 +224,8 @@ src/
 ├─ data/lines.js           路線と駅の座標データ
 ├─ lib/
 │  ├─ supabase.js          Supabaseクライアント
-│  └─ storage.js           画像のアップロード・削除・検証
+│  ├─ image.js             画像の検証とパス組み立て（通信なし）
+│  └─ storage.js           画像のアップロード・削除
 └─ components/
    ├─ LineMap.jsx          SVGの路線図
    ├─ StationPanel.jsx     駅ごとの投稿エリア

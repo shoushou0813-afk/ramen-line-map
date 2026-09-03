@@ -110,7 +110,7 @@ export const LINES = {
       { id: "okubo", name: "大久保", x: 390, y: 200, label: "bottom" },
       { id: "shinjuku", name: "新宿", x: 290, y: 200, label: "bottom" },
       { id: "yoyogi", name: "代々木", x: 190, y: 200, label: "bottom" },
-      { id: "sendagaya", name: "千駄ケ谷", x: 90, y: 200, label: "bottom" },
+      { id: "sendagaya", name: "千駄ケ谷", x: 90, y: 200, label: "left" },
       { id: "shinanomachi", name: "信濃町", x: 90, y: 330, label: "left" },
       { id: "yotsuya", name: "四ツ谷", x: 190, y: 330, label: "top" },
       { id: "ichigaya", name: "市ケ谷", x: 290, y: 330, label: "top" },

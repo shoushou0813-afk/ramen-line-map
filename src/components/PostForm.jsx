@@ -1,17 +1,11 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import { uploadImage, validateImage } from "../lib/storage";
 import { GENRES } from "../data/lines";
 
-async function uploadImage(file, userId) {
-  const ext = file.name.split(".").pop();
-  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage.from("post-images").upload(path, file);
-  if (uploadError) throw uploadError;
-
-  const { data } = supabase.storage.from("post-images").getPublicUrl(path);
-  return data.publicUrl;
-}
+// DB 側の check 制約と同じ値。片方だけ変えると保存時に弾かれるので注意
+const MAX_SHOP_NAME = 100;
+const MAX_MEMO = 500;
 
 export default function PostForm({ session, stationId, onPosted }) {
   const [shopName, setShopName] = useState("");
@@ -27,6 +21,20 @@ export default function PostForm({ session, stationId, onPosted }) {
 
   function handleImageChange(e) {
     const file = e.target.files?.[0] ?? null;
+
+    if (file) {
+      // アップロードして初めて弾かれると待たされるので、選んだ時点で確認する
+      const problem = validateImage(file);
+      if (problem) {
+        setError(problem);
+        e.target.value = ""; // 同じファイルを選び直せるようにする
+        setImageFile(null);
+        setImagePreview("");
+        return;
+      }
+    }
+
+    setError("");
     setImageFile(file);
     setImagePreview(file ? URL.createObjectURL(file) : "");
   }
@@ -96,6 +104,7 @@ export default function PostForm({ session, stationId, onPosted }) {
         className="input"
         placeholder="店名"
         value={shopName}
+        maxLength={MAX_SHOP_NAME}
         onChange={(e) => setShopName(e.target.value)}
         disabled={!loggedIn || saving}
       />
@@ -133,6 +142,7 @@ export default function PostForm({ session, stationId, onPosted }) {
         placeholder="メモ"
         rows={3}
         value={memo}
+        maxLength={MAX_MEMO}
         onChange={(e) => setMemo(e.target.value)}
         disabled={!loggedIn || saving}
       />
@@ -140,7 +150,7 @@ export default function PostForm({ session, stationId, onPosted }) {
       <input
         className="image-input"
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         onChange={handleImageChange}
         disabled={!loggedIn || saving}
       />

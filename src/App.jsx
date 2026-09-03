@@ -16,7 +16,22 @@ export default function App() {
   const [stationId, setStationId] = useState("shinjuku");
   const [session, setSession] = useState(null);
   const [counts, setCounts] = useState({});
-  const [posts, setPosts] = useState([]);
+  const [error, setError] = useState("");
+
+  // 取得した投稿は「どの駅のものか」と一緒に持つ。
+  // 読み込み中かどうかを別の state にすると、駅を切り替えた直後に
+  // 前の駅の投稿が新しい見出しの下に残ってしまうため。
+  const [loaded, setLoaded] = useState({ stationId: null, posts: [] });
+
+  // 表示中の駅と取得済みの駅が食い違っている間が「読み込み中」。
+  // state を増やさずに導出できる
+  const postsLoading = loaded.stationId !== stationId;
+  const posts = postsLoading ? [] : loaded.posts;
+
+  // 投稿・削除の後にデータを取り直すための合図。
+  // この値が変わると下の useEffect が再実行される
+  const [reloadKey, setReloadKey] = useState(0);
+  const refresh = useCallback(() => setReloadKey((n) => n + 1), []);
 
   // --- ログイン状態 ---------------------------------------------------
   useEffect(() => {
@@ -31,47 +46,61 @@ export default function App() {
   // --- 駅ごとの件数 ---------------------------------------------------
   // 駅ごとに問い合わせると13回通信が飛ぶので、station_id だけ全部取って
   // 手元で数える方式にした。件数が数万件を超えたら SQL 側で group by に変える
-  const loadCounts = useCallback(async () => {
-    const { data, error } = await supabase.from("posts").select("station_id");
-    if (error) {
-      console.error(error);
-      return;
-    }
-    const next = {};
-    for (const row of data) {
-      next[row.station_id] = (next[row.station_id] ?? 0) + 1;
-    }
-    setCounts(next);
-  }, []);
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      const { data, error: loadError } = await supabase.from("posts").select("station_id");
+      if (!alive) return;
+
+      if (loadError) {
+        console.error(loadError);
+        setError("件数の読み込みに失敗しました。時間をおいて再読み込みしてください。");
+        return;
+      }
+
+      const next = {};
+      for (const row of data) {
+        next[row.station_id] = (next[row.station_id] ?? 0) + 1;
+      }
+      setCounts(next);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [reloadKey]);
 
   // --- 選択中の駅の投稿 -----------------------------------------------
-  const loadPosts = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("station_id", stationId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-    setPosts(data ?? []);
-  }, [stationId]);
-
+  // 駅を素早く切り替えた時、古いリクエストの結果が後から届いて新しい駅の
+  // 一覧を上書きしないよう、クリーンアップで alive を落として無視する
   useEffect(() => {
-    loadCounts();
-  }, [loadCounts]);
+    let alive = true;
 
-  useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
+    (async () => {
+      const { data, error: loadError } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("station_id", stationId)
+        .order("created_at", { ascending: false });
 
-  // 投稿・削除の後は件数と一覧の両方を取り直す
-  const refresh = useCallback(() => {
-    loadCounts();
-    loadPosts();
-  }, [loadCounts, loadPosts]);
+      if (!alive) return;
+
+      if (loadError) {
+        console.error(loadError);
+        setError("投稿の読み込みに失敗しました。時間をおいて再読み込みしてください。");
+        setLoaded({ stationId, posts: [] });
+        return;
+      }
+
+      setError("");
+      setLoaded({ stationId, posts: data ?? [] });
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [stationId, reloadKey]);
 
   async function signIn() {
     await supabase.auth.signInWithOAuth({
@@ -144,6 +173,8 @@ export default function App() {
             stationId={stationId}
             posts={posts}
             session={session}
+            loading={postsLoading}
+            error={error}
             onChanged={refresh}
           />
         </>

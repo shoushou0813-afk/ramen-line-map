@@ -36,7 +36,7 @@ export const LINES = {
     // 環状線なので最後の駅（原宿）と最初の駅（新宿）も結ぶ必要がある
     loop: true,
     stations: [
-      { id: "shinjuku", name: "新宿", x: 300, y: 55, label: "top", corner: [470, 55] },
+      { id: "shinjuku", name: "新宿", x: 300, y: 55, label: "top" },
       { id: "shinokubo", name: "新大久保", x: 400, y: 55, label: "top", corner: [470, 55] },
       { id: "takadanobaba", name: "高田馬場", x: 470, y: 130, label: "right" },
       { id: "ikebukuro", name: "池袋", x: 470, y: 200, label: "right" },

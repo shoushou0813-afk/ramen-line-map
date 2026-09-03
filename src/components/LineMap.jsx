@@ -2,11 +2,11 @@
 // 描く順番が大事で、線 → 丸 → 文字 の順に書かないと線が丸の上に乗ってしまう
 // （SVG は後に書いたものが手前に来る）。
 
-const R = 20; // 駅の丸の半径
+export const R = 20; // 駅の丸の半径
 
 // 隣り合う駅を結ぶ線の座標を作る。
 // corner が指定されていたら、そこで一度折り曲げる（斜め線を出したくないため）
-function buildSegments(line) {
+export function buildSegments(line) {
   const segments = [];
   const list = line.stations;
 
@@ -30,7 +30,7 @@ function buildSegments(line) {
 }
 
 // 駅名をどこに置くか。丸に重ならない位置にずらす
-function labelAttrs(st) {
+export function labelAttrs(st) {
   switch (st.label) {
     case "bottom":
       return { x: st.x, y: st.y + R + 20, textAnchor: "middle" };

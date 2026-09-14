@@ -7,4 +7,17 @@ describe("lines.js", () => {
       expect(LINES[id]).toBeDefined();
     }
   });
+
+  it("同じ駅IDなら駅名も同じ", () => {
+    const names = {};
+    for (const line of Object.values(LINES)) {
+      for (const st of line.stations) {
+        if (names[st.id]) {
+          expect(st.name).toBe(names[st.id]);
+        } else {
+          names[st.id] = st.name;
+        }
+      }
+    }
+  });
 });

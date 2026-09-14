@@ -1,5 +1,7 @@
 # ラーメン路線図マップ
 
+![test](https://github.com/shoushou0813-afk/ramen-line-map/actions/workflows/test.yml/badge.svg)
+
 駅を選ぶと、その駅周辺のラーメン記録を見られる個人開発のWebアプリ。
 路線図上の丸の中の数字が、その駅に登録された記録の件数になっている。
 
@@ -138,6 +140,22 @@ npm run dev
 
 リポジトリをImportし、環境変数2つを登録するだけ。
 デプロイ後、発行されたURLをSupabaseのRedirect URLsに追加すること。
+
+## テストとCI
+
+```bash
+npm test
+```
+
+`src/data/lines.js` に対する単体テストを [src/data/lines.test.js](src/data/lines.test.js) に置いている。
+路線データが崩れると実害が出る箇所を確認している。
+
+- `LINE_ORDER` に並ぶ路線が `LINES` に実在するか
+- 渋谷のように複数路線に出てくる駅が、路線をまたいで同じ駅名になっているか
+- `label`（駅名を丸のどちら側に置くか）が `top` / `bottom` / `left` / `right` のいずれかか
+- `stationName(id)` が既存IDで正しい駅名を返し、未知のIDでは引数をそのまま返すか
+
+GitHub Actions（[.github/workflows/test.yml](.github/workflows/test.yml)）で、pushするたびに上記が自動実行される。
 
 ## ディレクトリ構成
 

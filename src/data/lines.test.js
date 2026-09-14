@@ -29,4 +29,10 @@ describe("lines.js", () => {
       }
     }
   });
+
+  it("stationNameは既存IDなら駅名を返し、未知のIDならそのまま返す", () => {
+    expect(stationName("shibuya")).toBe("渋谷");
+    expect(stationName("mitaka")).toBe("三鷹");
+    expect(stationName("nonexistent")).toBe("nonexistent");
+  });
 });

@@ -20,4 +20,13 @@ describe("lines.js", () => {
       }
     }
   });
+
+  it("labelがtop/bottom/left/rightのいずれか", () => {
+    const validLabels = ["top", "bottom", "left", "right"];
+    for (const line of Object.values(LINES)) {
+      for (const st of line.stations) {
+        expect(validLabels).toContain(st.label);
+      }
+    }
+  });
 });

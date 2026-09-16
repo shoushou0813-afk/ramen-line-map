@@ -658,6 +658,108 @@ body {
   margin: 4px 0 0;
 }
 
+/* --- エクセルの取り込み --- */
+.preview {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+  background: #fafafa;
+}
+
+.preview-title {
+  font-size: 14px;
+  margin: 0 0 8px;
+  word-break: break-all;
+}
+
+.preview-line {
+  font-size: 12px;
+  color: #444;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+
+.preview-mapping {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.preview-mapping li {
+  font-size: 11px;
+  color: #444;
+  background: var(--chip);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.preview-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.preview-type {
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.preview-company {
+  font-weight: 600;
+}
+
+.preview-when {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.preview-more {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.preview-skipped {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.preview-skipped summary {
+  cursor: pointer;
+}
+
+.preview-skipped ul {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+  line-height: 1.7;
+}
+
+.preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* --- 画面が狭いとき --- */
 /* 時間割は7列あるので、まず余白を削って中身の幅を確保する。
    それでも足りない場合は .tt-scroll が横スクロールで受け止める。 */

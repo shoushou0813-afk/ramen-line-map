@@ -24,6 +24,7 @@
 - 締切ボードに「あと◯日」を出す。未提出のまま期限を過ぎたものは赤で残る
 - 予定はブラウザの localStorage に保存するので、ログインもサーバーも要らない
 - **PWA**（ホーム画面に追加できるWebアプリ）。アイコンから起動でき、電波が無くても開ける
+- **エクセル／CSVの取り込み**。手元の就活管理表を選ぶと、見出しから企業名・日付・種別を読み取って予定にする
 - 予定をJSONファイルに書き出し／読み込みできる（端末をまたぐときの引き継ぎ用）
 
 設計の理由と詰まった点は [docs/shukatsu.md](docs/shukatsu.md) に書いた。
@@ -174,6 +175,8 @@ npm test
 - [layout.test.js](src/shukatsu/lib/layout.test.js) … 重なった予定の横分割、表示範囲外の予定の逃がし方、位置と高さの%
 - [agenda.test.js](src/shukatsu/lib/agenda.test.js) … 締切の並べ替えと、期限切れ／これからの振り分け
 - [backup.test.js](src/shukatsu/lib/backup.test.js) … 書き出したファイルを読み戻せるか、壊れたファイルで全消ししないか
+- [sheet.test.js](src/shukatsu/lib/sheet.test.js) … 見出しからの列の推測、エクセルの日付セルのずれ、年の無い「9/18」の解釈、表の形の判定
+- [csv.test.js](src/shukatsu/lib/csv.test.js) … 値の中のカンマ・改行・二重引用符、Shift_JISの読み分け
 
 GitHub Actions（[.github/workflows/test.yml](.github/workflows/test.yml)）で、pushするたびに上記が自動実行される。
 

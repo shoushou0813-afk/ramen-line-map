@@ -4,6 +4,7 @@ import UpcomingPanel from "./components/UpcomingPanel";
 import EventList from "./components/EventList";
 import EventForm from "./components/EventForm";
 import DataPanel from "./components/DataPanel";
+import SheetImport from "./components/SheetImport";
 import InstallHint from "./components/InstallHint";
 import { EVENT_TYPES } from "./data/eventTypes";
 import { loadEvents, saveEvents, newId } from "./lib/storage";
@@ -205,6 +206,11 @@ export default function ScheduleApp() {
             </button>
           </div>
         )}
+      </section>
+
+      <section className="card">
+        <h2 className="card-title">エクセルから取り込む</h2>
+        <SheetImport events={events} onImport={setEvents} />
       </section>
 
       <section className="card">

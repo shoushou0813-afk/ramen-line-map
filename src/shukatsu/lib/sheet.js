@@ -35,9 +35,26 @@ const TYPE_RULES = [
   ["es", ["エントリーシート", "es", "履歴書", "提出書類"]],
   ["webtest", ["webテスト", "テスト", "spi", "玉手箱", "tg-web", "適性検査", "筆記"]],
   ["og", ["ob", "og", "訪問", "リクルーター"]],
-  ["briefing", ["説明会", "セミナー", "仕事研究", "座談会", "インターン", "ｉｎｔｅｒｎ"]],
+  ["briefing", ["説明会", "セミナー", "仕事研究", "座談会", "インターン", "intern"]],
   ["interview", ["面接", "面談", "選考", "グループディスカッション", "グルディス", "gd"]],
 ];
+
+/** 語が当てはまるか。ob / og / es / gd は英字なので、単語の切れ目で区切って誤爆を防ぐ */
+function containsWord(text, word) {
+  if (/^[a-z]+$/.test(word)) {
+    return new RegExp(`(^|[^a-z])${word}([^a-z]|$)`).test(text);
+  }
+  return text.includes(word);
+}
+
+/** 当てはまった語のうち、一番長いものの文字数。1つも当てはまらなければ 0 */
+function matchLength(text, words) {
+  let longest = 0;
+  for (const word of words) {
+    if (containsWord(text, word)) longest = Math.max(longest, word.length);
+  }
+  return longest;
+}
 
 /**
  * 「一次面接」「会社説明会」「SPI」などの文字から種別を当てる。
@@ -47,14 +64,7 @@ export function detectType(text) {
   const t = normalizeHeader(text);
   if (!t) return "other";
   for (const [type, words] of TYPE_RULES) {
-    for (const word of words) {
-      // ob / og / es / gd は英字なので、単語の切れ目で区切って誤爆を防ぐ
-      if (/^[a-z]+$/.test(word)) {
-        if (new RegExp(`(^|[^a-z])${word}([^a-z]|$)`).test(t)) return type;
-      } else if (t.includes(word)) {
-        return type;
-      }
-    }
+    if (matchLength(t, words) > 0) return type;
   }
   return "other";
 }
@@ -113,17 +123,39 @@ export function detectTypeColumns(headerRow) {
   headerRow.forEach((raw, index) => {
     const label = raw == null ? "" : String(raw).trim();
     if (!label) return;
-    // 「企業名」「備考」のような一般の項目は種別列にしない
     const normalized = normalizeHeader(label);
-    const isField = COLUMN_RULES.some(
-      ([field, words]) => field !== "date" && words.some((w) => normalized.includes(w))
-    );
-    if (isField) return;
 
-    const type = detectType(label);
-    if (type !== "other") found.push({ index, type, label });
+    // 「会社説明会」は「会社」（項目名）と「説明会」（種別）の両方に当てはまる。
+    // 当てはまった語が長い方を採ることで、こういう見出しを取りこぼさない。
+    // 「企業名」「備考」のような一般の項目は、種別より項目名の方が長く当たるので残る。
+    // 引き分けのときは項目名を優先する（「選考状況」を面接の列にしないため）。
+    const typeLength = typeMatchLength(normalized);
+    if (typeLength === 0 || typeLength <= fieldMatchLength(normalized)) return;
+
+    found.push({ index, type: detectType(label), label });
   });
   return found;
+}
+
+/** 種別として当てはまった語の長さ */
+function typeMatchLength(normalized) {
+  let longest = 0;
+  for (const [, words] of TYPE_RULES) longest = Math.max(longest, matchLength(normalized, words));
+  return longest;
+}
+
+/**
+ * 項目名として当てはまった語の長さ。
+ * 日付だけは外している。「ES締切」のように、種別と日付の言葉が同居する見出しが
+ * 横持ちの表では普通に出てくるため。
+ */
+function fieldMatchLength(normalized) {
+  let longest = 0;
+  for (const [field, words] of COLUMN_RULES) {
+    if (field === "date") continue;
+    longest = Math.max(longest, matchLength(normalized, words));
+  }
+  return longest;
 }
 
 /**
@@ -172,7 +204,12 @@ export function analyzeSheet(rows) {
     throw new Error("企業名の列が見つかりませんでした。見出しに「企業名」や「会社名」を入れてください");
   }
 
-  const layout = typeColumns.length >= 2 ? "wide" : "long";
+  // 種別の列が2つ以上あれば、明らかに横持ち。
+  // 1つしか無くても、ほかに日付の列が無いなら、その列が日付を持っている横持ちとみなす
+  // （例: 企業名 | 面接日 | 場所 や 企業名 | ES締切 | 提出済）。
+  const layout =
+    typeColumns.length >= 2 || (typeColumns.length === 1 && columns.date == null) ? "wide" : "long";
+
   if (layout === "long" && columns.date == null) {
     throw new Error("日付の列が見つかりませんでした。見出しに「日付」「開催日」「締切」などを入れてください");
   }
@@ -302,12 +339,22 @@ export function parseSheetTime(value) {
 const cell = (row, index) => (index == null ? null : (row?.[index] ?? null));
 const text = (value) => (value == null ? "" : String(value).trim());
 
+// 完了を表す書き方と、そうでない書き方。
+// 部分一致で見ると「未完了」が「完了」を含み、「No」が「o」を含んでしまうので、
+// どちらも語そのものと突き合わせる。
+const DONE_WORDS = ["済", "済み", "完了", "提出済", "提出済み", "参加済", "参加済み",
+                    "done", "ok", "yes", "○", "◯", "●", "✓", "✔", "1", "true"];
+const NOT_DONE_WORDS = ["未", "なし", "no", "x", "×", "✕", "-", "0", "false"];
+
 function isDone(value) {
   const t = normalizeHeader(value);
   if (!t) return false;
-  return ["済", "完了", "提出済", "参加済", "done", "ok", "○", "◯", "o", "×"].some(
-    (w) => t.includes(w) && w !== "×"
-  );
+  // 「未」で始まるもの（未完了・未提出・未参加…）はすべて未完了
+  if (t.startsWith("未")) return false;
+  if (NOT_DONE_WORDS.includes(t)) return false;
+  if (DONE_WORDS.includes(t)) return true;
+  // 「提出済み」「参加完了」のような書き方も拾う
+  return /済み?$/.test(t) || t.endsWith("完了");
 }
 
 /**
@@ -404,10 +451,15 @@ export function sheetToEvents(rows, analysis, today = new Date()) {
 /**
  * すでにある予定と突き合わせて、重なるものを外す。
  * 同じ表を2回取り込んでも増えないようにするため。
- * 「同じ企業・同じ日・同じ種別」なら同じ予定とみなす。
+ *
+ * 「同じ企業・同じ日・同じ種別」だけで見分けると、同じ日の一次面接と二次面接が
+ * 1件に潰れてしまう（どちらも種別は「面接」）。予定が黙って消える方が害が大きいので、
+ * 開始時刻とメモまで含めて突き合わせる。
+ * 代わりに、取り込んだあとメモを書き換えて同じ表を入れ直すと二重に入るが、
+ * 締切が消えるよりはましだと判断した。
  */
 export function mergeEvents(existing, incoming) {
-  const keyOf = (e) => `${e.company}|${e.date}|${e.type}`;
+  const keyOf = (e) => [e.company, e.date, e.type, e.start ?? "", e.memo ?? ""].join("|");
   const seen = new Set(existing.map(keyOf));
 
   const added = [];

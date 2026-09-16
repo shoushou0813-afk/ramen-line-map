@@ -54,6 +54,13 @@ describe("detectType", () => {
     expect(detectType("logistics")).toBe("other"); // og を含むが単語ではない
     expect(detectType("OB・OG訪問")).toBe("og");
   });
+
+  it("英字表記のインターンも説明会として扱う", () => {
+    // 判定は半角に揃えたあとの文字列に対して行う
+    expect(detectType("Intern")).toBe("briefing");
+    expect(detectType("ＩＮＴＥＲＮ")).toBe("briefing");
+    expect(detectType("インターン")).toBe("briefing");
+  });
 });
 
 describe("detectColumns", () => {
@@ -92,6 +99,22 @@ describe("detectTypeColumns", () => {
   it("「企業名」「備考」のような一般の項目は種別列にしない", () => {
     expect(detectTypeColumns(["企業名", "種別", "日付", "備考"])).toEqual([]);
   });
+
+  it("項目名と種別の両方に当てはまる見出しは、当たった語が長い方を採る", () => {
+    // 「会社説明会」は「会社」（項目名）と「説明会」（種別）の両方を含む。
+    // 項目名に取られると、この列の日付が黙って捨てられてしまう
+    const found = detectTypeColumns(["企業名", "会社説明会", "ES締切"]);
+    expect(found.map((c) => [c.index, c.type])).toEqual([
+      [1, "briefing"],
+      [2, "es"],
+    ]);
+  });
+
+  it("引き分けのときは項目名を優先する", () => {
+    // 「選考状況」は「選考」（面接）と「状況」（完了）がどちらも2文字。
+    // 状況の列を面接の列にしてしまわない
+    expect(detectTypeColumns(["企業名", "選考状況"])).toEqual([]);
+  });
 });
 
 describe("findHeaderRow / analyzeSheet", () => {
@@ -111,6 +134,26 @@ describe("findHeaderRow / analyzeSheet", () => {
     const analysis = analyzeSheet(rows);
     expect(analysis.layout).toBe("wide");
     expect(analysis.typeColumns).toHaveLength(3);
+  });
+
+  it("種別の列が1つでも、ほかに日付の列が無ければ横持ちとして読む", () => {
+    // 「企業名 | 面接日 | 場所」のような、1つの選考だけを管理している表
+    for (const header of [
+      ["企業名", "面接日", "場所"],
+      ["企業名", "ES締切", "提出済"],
+    ]) {
+      const analysis = analyzeSheet([header, ["A社", "9/18", ""]]);
+      expect(analysis.layout).toBe("wide");
+      expect(analysis.typeColumns).toHaveLength(1);
+    }
+  });
+
+  it("日付の列があれば、種別らしい列が1つあっても縦持ちのまま", () => {
+    const analysis = analyzeSheet([
+      ["企業名", "種別", "開催日", "面接官"],
+      ["A社", "説明会", "9/18", "山田"],
+    ]);
+    expect(analysis.layout).toBe("long");
   });
 
   it("企業名の列が無ければエラーにする", () => {
@@ -243,6 +286,23 @@ describe("sheetToEvents（縦持ち）", () => {
     expect(events.find((e) => e.company === "サンプル物産").done).toBe(true);
   });
 
+  it("「未完了」「No」を完了と取り違えない", () => {
+    // 部分一致で見ると「未完了」が「完了」を、「No」が「o」を含んでしまう
+    const doneOf = (mark) => {
+      const rows = [
+        ["企業名", "日付", "提出済"],
+        ["A社", "9/18", mark],
+      ];
+      return sheetToEvents(rows, analyzeSheet(rows), TODAY).events[0].done;
+    };
+    for (const mark of ["済", "済み", "完了", "提出済み", "○", "done", "OK"]) {
+      expect(doneOf(mark), mark).toBe(true);
+    }
+    for (const mark of ["未完了", "未提出", "未参加", "No", "Not yet", "×", "なし", ""]) {
+      expect(doneOf(mark), mark).toBe(false);
+    }
+  });
+
   it("空行は黙って飛ばし、日付が読めない行は理由を残す", () => {
     expect(skipped).toHaveLength(1);
     expect(skipped[0]).toMatchObject({ row: 10 });
@@ -311,6 +371,31 @@ describe("mergeEvents", () => {
     const existing = [e("A社", "2026-09-15", "briefing")];
     mergeEvents(existing, [e("B社", "2026-09-16", "es")]);
     expect(existing).toHaveLength(1);
+  });
+
+  it("同じ日の一次面接と最終面接を1件に潰さない", () => {
+    // どちらも種別は「面接」なので、企業名・日付・種別だけでは見分けられない
+    const rows = [
+      ["企業名", "一次面接", "最終面接"],
+      ["A社", "9/18", "9/18"],
+    ];
+    const { events } = sheetToEvents(rows, analyzeSheet(rows), TODAY);
+    expect(events).toHaveLength(2);
+
+    const first = mergeEvents([], events);
+    expect(first.added).toHaveLength(2);
+    expect(first.duplicates).toBe(0);
+
+    // 同じ表をもう一度入れても増えない
+    const second = mergeEvents(first.merged, events);
+    expect(second.added).toHaveLength(0);
+    expect(second.duplicates).toBe(2);
+  });
+
+  it("同じ企業・同じ日・同じ種別でも、時刻が違えば別の予定として扱う", () => {
+    const morning = { ...e("A社", "2026-09-18", "interview"), start: "10:00" };
+    const afternoon = { ...e("A社", "2026-09-18", "interview"), start: "14:00" };
+    expect(mergeEvents([morning], [afternoon]).added).toHaveLength(1);
   });
 });
 

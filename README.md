@@ -21,6 +21,7 @@
 `/shukatsu/` で開く（ラーメン路線図とはデータもログインも共有していない）。
 
 - 週の時間割に予定をブロックで置く。同じ時間に重なった予定は横に分割して両方見せる
+- 月表示で1か月を一覧できる。マスには色の印だけを置き、選んだ日の中身は下に出す
 - 締切ボードに「あと◯日」を出す。未提出のまま期限を過ぎたものは赤で残る
 - 予定はブラウザの localStorage に保存するので、ログインもサーバーも要らない
 - **PWA**（ホーム画面に追加できるWebアプリ）。アイコンから起動でき、電波が無くても開ける
@@ -177,6 +178,7 @@ npm test
 - [backup.test.js](src/shukatsu/lib/backup.test.js) … 書き出したファイルを読み戻せるか、壊れたファイルで全消ししないか
 - [sheet.test.js](src/shukatsu/lib/sheet.test.js) … 見出しからの列の推測、エクセルの日付セルのずれ、年の無い「9/18」の解釈、表の形の判定
 - [csv.test.js](src/shukatsu/lib/csv.test.js) … 値の中のカンマ・改行・二重引用符、Shift_JISの読み分け
+- [month.test.js](src/shukatsu/lib/month.test.js) … 月ごとの日数とうるう年、31日から月を送ったときの繰り上がり、カレンダーの週の埋め方
 
 GitHub Actions（[.github/workflows/test.yml](.github/workflows/test.yml)）で、pushするたびに上記が自動実行される。
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import WeekTimetable from "./components/WeekTimetable";
+import MonthCalendar from "./components/MonthCalendar";
 import UpcomingPanel from "./components/UpcomingPanel";
 import EventList from "./components/EventList";
 import EventForm from "./components/EventForm";
@@ -16,9 +17,11 @@ import {
   toDateKey,
   weekDateKeys,
 } from "./lib/date";
+import { addMonths, formatYearMonth, startOfMonth } from "./lib/month";
 
 const MODES = [
   { id: "week", label: "時間割" },
+  { id: "month", label: "月" },
   { id: "list", label: "リスト" },
 ];
 
@@ -42,6 +45,8 @@ export default function ScheduleApp() {
   // 再描画のたびに読み直さずに済む（「遅延初期化」と呼ばれる書き方）
   const [events, setEvents] = useState(() => loadEvents());
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  const [monthDate, setMonthDate] = useState(() => startOfMonth(new Date()));
+  const [selectedDay, setSelectedDay] = useState(() => toDateKey(new Date()));
   const [mode, setMode] = useState("week");
   const [editing, setEditing] = useState(null);
   const [showPast, setShowPast] = useState(false);
@@ -70,9 +75,29 @@ export default function ScheduleApp() {
 
   const weekKeys = weekDateKeys(weekStart);
   const lastKey = weekKeys[showWeekend ? 6 : 4];
-  const weekLabel = `${formatMD(weekKeys[0])} 〜 ${formatMD(lastKey)}`;
+  // 見出しに年月も出す。「9/14 〜 9/18」だけだと、週を送っていくうちに
+  // 何月を見ているのか分からなくなる
+  const weekLabel = `${formatYearMonth(weekStart)} ${formatMD(weekKeys[0])} 〜 ${formatMD(lastKey)}`;
   // 「今週」バッジは土日を隠していても週全体で判定する（今日が日曜でも今週は今週）
   const isThisWeek = weekKeys.includes(todayKey);
+
+  const monthLabel = formatYearMonth(monthDate);
+  const isThisMonth = monthLabel === formatYearMonth(new Date());
+
+  /**
+   * 月を送る。選んでいる日がその月の外に出たままだと、下の一覧が
+   * 見えている月と食い違うので、選択も連れていく
+   * （今日がその月にあれば今日、無ければ1日）。
+   */
+  function goMonth(offset) {
+    setMonthDate((prev) => {
+      const next = offset === 0 ? startOfMonth(new Date()) : addMonths(prev, offset);
+      const today = new Date();
+      const isSameMonth = formatYearMonth(next) === formatYearMonth(today);
+      setSelectedDay(toDateKey(isSameMonth ? today : next));
+      return next;
+    });
+  }
 
   function openNew(date, start) {
     setEditing(emptyEvent(date ?? todayKey, start));
@@ -127,11 +152,26 @@ export default function ScheduleApp() {
       <section className="card">
         <div className="card-head">
           <h2 className="card-title">
-            {mode === "week" ? weekLabel : "予定一覧"}
+            {mode === "week" && weekLabel}
+            {mode === "month" && monthLabel}
+            {mode === "list" && "予定一覧"}
             {mode === "week" && isThisWeek && <span className="today-badge">今週</span>}
+            {mode === "month" && isThisMonth && <span className="today-badge">今月</span>}
           </h2>
 
-          {mode === "week" ? (
+          {mode === "month" ? (
+            <div className="week-nav">
+              <button className="button" onClick={() => goMonth(-1)}>
+                ← 前月
+              </button>
+              <button className="button" onClick={() => goMonth(0)}>
+                今月
+              </button>
+              <button className="button" onClick={() => goMonth(1)}>
+                次月 →
+              </button>
+            </div>
+          ) : mode === "week" ? (
             <div className="week-nav">
               <button className="button" onClick={() => setWeekStart((w) => addDays(w, -7))}>
                 ← 前週
@@ -180,7 +220,7 @@ export default function ScheduleApp() {
           ))}
         </div>
 
-        {mode === "week" ? (
+        {mode === "week" && (
           <WeekTimetable
             weekStart={weekStart}
             events={shown}
@@ -189,7 +229,21 @@ export default function ScheduleApp() {
             onSelect={setEditing}
             onAddAt={openNew}
           />
-        ) : (
+        )}
+
+        {mode === "month" && (
+          <MonthCalendar
+            monthDate={monthDate}
+            events={shown}
+            todayKey={todayKey}
+            selectedKey={selectedDay}
+            onSelectDay={setSelectedDay}
+            onSelectEvent={setEditing}
+            onAddAt={openNew}
+          />
+        )}
+
+        {mode === "list" && (
           <EventList
             events={listEvents}
             todayKey={todayKey}

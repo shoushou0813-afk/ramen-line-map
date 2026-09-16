@@ -316,6 +316,177 @@ body {
   text-decoration: line-through;
 }
 
+/* --- 月表示 --- */
+.month-head,
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.month-head {
+  /* 下のマス目と列がずれないよう、枠線と隙間のぶんを合わせる */
+  gap: 2px;
+  padding: 0 1px;
+}
+
+.month-weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  padding-bottom: 6px;
+}
+
+.month-grid {
+  gap: 2px;
+  background: var(--grid-line);
+  border: 1px solid var(--grid-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.month-cell {
+  /* 高さだけ決めて、幅は列（1fr）に任せる。
+     aspect-ratio で正方形にすると、幅が縮めない下限になって
+     スマホで7列が画面からはみ出す */
+  min-height: 54px;
+  border: none;
+  background: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 2px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.month-cell:hover {
+  background: #f4f7ff;
+}
+
+.month-cell.is-outside {
+  background: #fafafa;
+  color: #bbb;
+}
+
+.month-cell.is-today {
+  background: #eef4ff;
+}
+
+.month-cell.is-selected {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.month-day {
+  font-size: 13px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.month-cell.is-today .month-day {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.month-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 2px;
+  min-height: 0;
+}
+
+.month-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: block;
+}
+
+.month-dot.is-done {
+  opacity: 0.3;
+}
+
+.month-more {
+  font-size: 9px;
+  line-height: 6px;
+  color: var(--muted);
+}
+
+/* --- 月表示で選んだ日の中身 --- */
+.month-day-panel {
+  margin-top: 14px;
+}
+
+.month-day-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-day-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.month-day-item {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.month-day-item:hover {
+  background: #f2f5ff;
+}
+
+.month-day-item.is-done {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.month-day-time {
+  flex: 0 0 60px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.month-day-company {
+  font-weight: 600;
+}
+
+.month-day-type {
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.month-day-place {
+  font-size: 12px;
+  color: var(--muted);
+}
+
 /* --- 締切ボード --- */
 .upcoming-group + .upcoming-group {
   margin-top: 14px;

@@ -15,6 +15,21 @@
 - 投稿には5段階の星評価と写真を添えられる（写真は Supabase Storage に保存）
 - Googleログイン。未ログインでも閲覧はできるが、投稿はできない
 
+## もう1つのページ：就活タイムテーブル
+
+同じリポジトリに、説明会・ES締切・面接を**時間割の形**で並べるページを入れている。
+`/shukatsu/` で開く（ラーメン路線図とはデータもログインも共有していない）。
+
+- 週の時間割に予定をブロックで置く。同じ時間に重なった予定は横に分割して両方見せる
+- 月表示で1か月を一覧できる。マスには色の印だけを置き、選んだ日の中身は下に出す
+- 締切ボードに「あと◯日」を出す。未提出のまま期限を過ぎたものは赤で残る
+- 予定はブラウザの localStorage に保存するので、ログインもサーバーも要らない
+- **PWA**（ホーム画面に追加できるWebアプリ）。アイコンから起動でき、電波が無くても開ける
+- **エクセル／CSVの取り込み**。手元の就活管理表を選ぶと、見出しから企業名・日付・種別を読み取って予定にする
+- 予定をJSONファイルに書き出し／読み込みできる（端末をまたぐときの引き継ぎ用）
+
+設計の理由と詰まった点は [docs/shukatsu.md](docs/shukatsu.md) に書いた。
+
 ## なぜこの構成にしたか
 
 ### サーバーを書かず Supabase にした
@@ -155,6 +170,16 @@ npm test
 - `label`（駅名を丸のどちら側に置くか）が `top` / `bottom` / `left` / `right` のいずれかか
 - `stationName(id)` が既存IDで正しい駅名を返し、未知のIDでは引数をそのまま返すか
 
+就活タイムテーブル側は、画面を描かずに確かめられる計算をすべて `src/shukatsu/lib/` に切り出してテストしている。
+
+- [date.test.js](src/shukatsu/lib/date.test.js) … 日付がUTC解釈でずれないか、月末・年末をまたぐか、週の開始が月曜になるか
+- [layout.test.js](src/shukatsu/lib/layout.test.js) … 重なった予定の横分割、表示範囲外の予定の逃がし方、位置と高さの%
+- [agenda.test.js](src/shukatsu/lib/agenda.test.js) … 締切の並べ替えと、期限切れ／これからの振り分け
+- [backup.test.js](src/shukatsu/lib/backup.test.js) … 書き出したファイルを読み戻せるか、壊れたファイルで全消ししないか
+- [sheet.test.js](src/shukatsu/lib/sheet.test.js) … 見出しからの列の推測、エクセルの日付セルのずれ、年の無い「9/18」の解釈、表の形の判定
+- [csv.test.js](src/shukatsu/lib/csv.test.js) … 値の中のカンマ・改行・二重引用符、Shift_JISの読み分け
+- [month.test.js](src/shukatsu/lib/month.test.js) … 月ごとの日数とうるう年、31日から月を送ったときの繰り上がり、カレンダーの週の埋め方
+
 GitHub Actions（[.github/workflows/test.yml](.github/workflows/test.yml)）で、pushするたびに上記が自動実行される。
 
 ## ディレクトリ構成
@@ -172,7 +197,16 @@ src/
    ├─ Reel.jsx
    └─ Stars.jsx            星評価の表示
 supabase/schema.sql        テーブル定義とRLSポリシー
+
+shukatsu/index.html        就活タイムテーブルの入口
+src/shukatsu/              就活タイムテーブル一式（詳細は docs/shukatsu.md）
+public/shukatsu/           アイコン・manifest・サービスワーカー（PWA用）
 ```
+
+`index.html` と `shukatsu/index.html` の2つを入口にする**マルチページ構成**にしている
+（`vite.config.js` の `build.rollupOptions.input`）。
+JavaScriptもCSSもページごとに分かれて出力されるので、
+片方を開いたときにもう片方のコードは読み込まれない。
 
 ## 制約
 

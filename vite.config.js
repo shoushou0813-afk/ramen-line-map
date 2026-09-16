@@ -12,11 +12,11 @@ export default defineConfig({
   build: {
     // 1つのプロジェクトに2つのページを持たせる「マルチページ構成」。
     // ここに書いたHTMLがそれぞれ独立した入口になり、
-    // /（ラーメン路線図）と /shukatsu.html（就活タイムテーブル）で開ける。
+    // /（ラーメン路線図）と /shukatsu/（就活タイムテーブル）で開ける。
     rollupOptions: {
       input: {
         main: resolve(root, "index.html"),
-        shukatsu: resolve(root, "shukatsu.html"),
+        shukatsu: resolve(root, "shukatsu/index.html"),
       },
     },
   },

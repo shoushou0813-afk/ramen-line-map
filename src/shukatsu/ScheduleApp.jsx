@@ -3,6 +3,8 @@ import WeekTimetable from "./components/WeekTimetable";
 import UpcomingPanel from "./components/UpcomingPanel";
 import EventList from "./components/EventList";
 import EventForm from "./components/EventForm";
+import DataPanel from "./components/DataPanel";
+import InstallHint from "./components/InstallHint";
 import { EVENT_TYPES } from "./data/eventTypes";
 import { loadEvents, saveEvents, newId } from "./lib/storage";
 import { sampleEvents } from "./data/sample";
@@ -94,6 +96,8 @@ export default function ScheduleApp() {
 
   return (
     <div className="page">
+      <InstallHint />
+
       <header className="header">
         <h1 className="title">就活タイムテーブル</h1>
         <p className="lead">
@@ -201,6 +205,11 @@ export default function ScheduleApp() {
             </button>
           </div>
         )}
+      </section>
+
+      <section className="card">
+        <h2 className="card-title">データの持ち出し</h2>
+        <DataPanel events={events} onImport={setEvents} />
       </section>
 
       {/* 画面右下に固定した追加ボタン。時間割の空きをクリックしても追加できる */}

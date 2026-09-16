@@ -18,11 +18,13 @@
 ## もう1つのページ：就活タイムテーブル
 
 同じリポジトリに、説明会・ES締切・面接を**時間割の形**で並べるページを入れている。
-`/shukatsu.html` で開く（ラーメン路線図とはデータもログインも共有していない）。
+`/shukatsu/` で開く（ラーメン路線図とはデータもログインも共有していない）。
 
 - 週の時間割に予定をブロックで置く。同じ時間に重なった予定は横に分割して両方見せる
 - 締切ボードに「あと◯日」を出す。未提出のまま期限を過ぎたものは赤で残る
 - 予定はブラウザの localStorage に保存するので、ログインもサーバーも要らない
+- **PWA**（ホーム画面に追加できるWebアプリ）。アイコンから起動でき、電波が無くても開ける
+- 予定をJSONファイルに書き出し／読み込みできる（端末をまたぐときの引き継ぎ用）
 
 設計の理由と詰まった点は [docs/shukatsu.md](docs/shukatsu.md) に書いた。
 
@@ -171,6 +173,7 @@ npm test
 - [date.test.js](src/shukatsu/lib/date.test.js) … 日付がUTC解釈でずれないか、月末・年末をまたぐか、週の開始が月曜になるか
 - [layout.test.js](src/shukatsu/lib/layout.test.js) … 重なった予定の横分割、表示範囲外の予定の逃がし方、位置と高さの%
 - [agenda.test.js](src/shukatsu/lib/agenda.test.js) … 締切の並べ替えと、期限切れ／これからの振り分け
+- [backup.test.js](src/shukatsu/lib/backup.test.js) … 書き出したファイルを読み戻せるか、壊れたファイルで全消ししないか
 
 GitHub Actions（[.github/workflows/test.yml](.github/workflows/test.yml)）で、pushするたびに上記が自動実行される。
 
@@ -190,11 +193,12 @@ src/
    └─ Stars.jsx            星評価の表示
 supabase/schema.sql        テーブル定義とRLSポリシー
 
-shukatsu.html              就活タイムテーブルの入口
+shukatsu/index.html        就活タイムテーブルの入口
 src/shukatsu/              就活タイムテーブル一式（詳細は docs/shukatsu.md）
+public/shukatsu/           アイコン・manifest・サービスワーカー（PWA用）
 ```
 
-`index.html` と `shukatsu.html` の2つを入口にする**マルチページ構成**にしている
+`index.html` と `shukatsu/index.html` の2つを入口にする**マルチページ構成**にしている
 （`vite.config.js` の `build.rollupOptions.input`）。
 JavaScriptもCSSもページごとに分かれて出力されるので、
 片方を開いたときにもう片方のコードは読み込まれない。

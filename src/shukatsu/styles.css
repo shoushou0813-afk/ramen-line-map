@@ -26,7 +26,10 @@ body {
 .page {
   max-width: 900px;
   margin: 0 auto;
-  padding: 24px 16px 96px;
+  /* env(safe-area-inset-*) … iPhoneのノッチやホームバーに隠れる幅。
+     ホーム画面から起動すると画面いっぱいに広がるので、その分を足しておく */
+  padding: calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom))
+    calc(16px + env(safe-area-inset-left));
 }
 
 /* --- ヘッダー --- */
@@ -485,8 +488,8 @@ body {
 /* --- 追加ボタン（画面右下に固定） --- */
 .fab {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: calc(20px + env(safe-area-inset-right));
+  bottom: calc(20px + env(safe-area-inset-bottom));
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -608,6 +611,53 @@ body {
   padding: 12px 0;
 }
 
+/* --- ホーム画面に追加の案内 --- */
+.install-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #eef4ff;
+  border: 1px solid #c7d7ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.install-hint-body {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #1e3a8a;
+}
+
+.install-hint-body p {
+  margin: 2px 0 0;
+}
+
+.install-hint-close {
+  border: none;
+  background: none;
+  color: #1e3a8a;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+
+/* --- データの持ち出し --- */
+.data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.data-message {
+  font-size: 12px;
+  color: var(--accent);
+  margin: 4px 0 0;
+}
+
 /* --- 画面が狭いとき --- */
 /* 時間割は7列あるので、まず余白を削って中身の幅を確保する。
    それでも足りない場合は .tt-scroll が横スクロールで受け止める。 */
@@ -630,7 +680,7 @@ body {
   }
 
   .fab {
-    right: 12px;
-    bottom: 12px;
+    right: calc(12px + env(safe-area-inset-right));
+    bottom: calc(12px + env(safe-area-inset-bottom));
   }
 }

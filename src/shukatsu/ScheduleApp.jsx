@@ -19,8 +19,10 @@ import {
 } from "./lib/date";
 import { addMonths, formatYearMonth, startOfMonth } from "./lib/month";
 
+// 「時間割」だけ呼び方の種類が違うと、週と月を切り替えるタブだと読み取れない。
+// 期間の単位で揃えている。
 const MODES = [
-  { id: "week", label: "時間割" },
+  { id: "week", label: "週" },
   { id: "month", label: "月" },
   { id: "list", label: "リスト" },
 ];

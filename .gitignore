@@ -1,6 +1,8 @@
 node_modules
 dist
-.env
-.env.local
+# .env.production など後から増やしても取りこぼさないようまとめて除外する
+.env*
+# ただしダミー値だけの雛形はリポジトリに含める
+!.env.example
 .DS_Store
 desktop.ini

@@ -55,9 +55,9 @@ export default function PostForm({ session, stationId, onPosted }) {
       }
     }
 
-    // user_id は RLS のポリシーと突き合わせられるので、必ず本人の id を入れる。
-    // user_name は表示のたびに auth 側を引きに行くのが面倒なので、
-    // 投稿時点の名前をそのまま持たせている（あえて非正規化）
+    // 投稿者（user_id / user_name）はここから送らない。
+    // ブラウザから送れる値は詐称できるので、schema.sql の set_post_author
+    // トリガーがログイン中のユーザーの値で必ず上書きする。
     const { error: insertError } = await supabase.from("posts").insert({
       station_id: stationId,
       shop_name: shopName.trim(),
@@ -65,8 +65,6 @@ export default function PostForm({ session, stationId, onPosted }) {
       memo: memo.trim() || null,
       rating,
       image_url: imageUrl,
-      user_id: session.user.id,
-      user_name: session.user.user_metadata?.name ?? "名無し",
     });
 
     setSaving(false);

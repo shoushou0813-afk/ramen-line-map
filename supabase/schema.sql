@@ -44,6 +44,11 @@ create policy "本人だけ削除できる"
 -- RLS は user_id しか検証しないので、user_name をブラウザから送らせると
 -- 本人のまま好きな表示名を名乗れてしまう。BEFORE INSERT で必ず上書きする。
 -- security definer なのは auth.users を読むため（通常の権限では参照できない）。
+--
+-- auth.uid() が null になるのは次の2通りで、どちらも上書きしない：
+--   1. 未ログインのブラウザ … RLS の with check (auth.uid() = user_id) が弾く
+--   2. service_role キーや SQL Editor … もともと全権を持つ管理経路。
+--      シードスクリプトや手動メンテのために、指定した値をそのまま通す
 create or replace function public.set_post_author()
 returns trigger
 language plpgsql
@@ -54,7 +59,10 @@ declare
   meta  jsonb;
   mail  text;
 begin
-  -- 未ログインならここが null になり、user_id の not null 制約で弾かれる
+  if auth.uid() is null then
+    return new;
+  end if;
+
   new.user_id := auth.uid();
 
   select u.raw_user_meta_data, u.email

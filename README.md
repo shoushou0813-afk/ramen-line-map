@@ -91,6 +91,11 @@ const { data } = await supabase.from("posts").select("station_id");
 new.user_id := auth.uid();
 ```
 
+ただし `auth.uid()` は service_role キーや SQL Editor からの操作でも null に
+なるため、無条件に上書きすると一括投入や手動メンテができなくなる。
+null のときは上書きせず素通りさせている。未ログインのブラウザも null だが、
+そちらは RLS の `with check (auth.uid() = user_id)` が弾くので穴にはならない。
+
 ## 詰まった点と解決
 
 ### SVGの座標系で上下が逆になった
@@ -140,14 +145,34 @@ VITE_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
 ```
 
-### 4. 起動
+### 4. サンプル投稿を入れる（任意）
+
+空の画面だと見た目が分からないので、デモ用のサンプル投稿を一括投入できる。
+
+```
+npm run seed -- --dry-run   # 何も書き込まず、入る予定の件数と中身を表示
+npm run seed                # 実際に投入する
+```
+
+`.env` に `SUPABASE_SERVICE_ROLE_KEY` が必要（`.env.example` を参照）。
+service_role キーは RLS を全て素通りする管理者用の鍵なので、ローカルの `.env`
+に置いたままにして、Git にも Vercel のクライアント側にも出さないこと。
+`VITE_` を付けるとブラウザのバンドルに埋め込まれるので絶対に付けない。
+
+`posts.user_id` は `auth.users` への外部キーなので、先に一度アプリで
+Google ログインしておく必要がある。そのアカウントの投稿として入る。
+
+店名は実在の店と紛らわしくないよう架空の語を組み合わせて生成している。
+`(station_id, shop_name)` が既にあるものは飛ばすので、何度実行しても増えない。
+
+### 5. 起動
 
 ```bash
 npm install
 npm run dev
 ```
 
-### 5. デプロイ（Vercel）
+### 6. デプロイ（Vercel）
 
 リポジトリをImportし、環境変数2つを登録するだけ。
 デプロイ後、発行されたURLをSupabaseのRedirect URLsに追加すること。
@@ -166,6 +191,14 @@ npm test
 - `label`（駅名を丸のどちら側に置くか）が `top` / `bottom` / `left` / `right` のいずれかか
 - `stationName(id)` が既存IDで正しい駅名を返し、未知のIDでは引数をそのまま返すか
 
+サンプル投稿の生成についても [scripts/seed-data.test.js](scripts/seed-data.test.js) で
+確認している。壊れたデータを本番のDBに流し込まないためのもの。
+
+- `station_id` が実在する駅だけか、全駅に最低1件あるか
+- `genre` が `GENRES` に収まり、`rating` がDBの check 制約と同じ 1〜5 か
+- 同じ駅に同じ店名が重複しないか（再実行時のスキップ判定が効く前提）
+- 何度呼んでも同じ結果になるか（再実行しても投稿が増えない前提）
+
 GitHub Actions（[.github/workflows/test.yml](.github/workflows/test.yml)）で、pushするたびに上記が自動実行される。
 
 ## ディレクトリ構成
@@ -183,6 +216,9 @@ src/
    ├─ Reel.jsx
    └─ Stars.jsx            星評価の表示
 supabase/schema.sql        テーブル定義とRLSポリシー
+scripts/
+├─ seed.js                 サンプル投稿の一括投入（ローカル実行）
+└─ seed-data.js            投入するサンプル投稿の組み立て
 ```
 
 ## 制約

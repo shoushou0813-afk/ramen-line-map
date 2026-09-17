@@ -40,6 +40,44 @@ create policy "本人だけ削除できる"
   on public.posts for delete
   using (auth.uid() = user_id);
 
+-- 投稿者（user_id / user_name）はサーバー側で決める。
+-- RLS は user_id しか検証しないので、user_name をブラウザから送らせると
+-- 本人のまま好きな表示名を名乗れてしまう。BEFORE INSERT で必ず上書きする。
+-- security definer なのは auth.users を読むため（通常の権限では参照できない）。
+create or replace function public.set_post_author()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  meta  jsonb;
+  mail  text;
+begin
+  -- 未ログインならここが null になり、user_id の not null 制約で弾かれる
+  new.user_id := auth.uid();
+
+  select u.raw_user_meta_data, u.email
+    into meta, mail
+    from auth.users u
+   where u.id = auth.uid();
+
+  new.user_name := coalesce(
+    nullif(meta ->> 'name', ''),
+    nullif(meta ->> 'full_name', ''),
+    nullif(split_part(coalesce(mail, ''), '@', 1), ''),
+    '名無し'
+  );
+
+  return new;
+end;
+$$;
+
+drop trigger if exists set_post_author on public.posts;
+create trigger set_post_author
+  before insert on public.posts
+  for each row execute function public.set_post_author();
+
 -- 投稿写真用の Storage バケット。
 -- ファイルは "{user_id}/xxxx.jpg" のパスで保存する（本人判定に使うため）
 insert into storage.buckets (id, name, public)

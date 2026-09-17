@@ -82,6 +82,15 @@ const { data } = await supabase.from("posts").select("station_id");
 投稿時点の名前を `posts.user_name` に持たせている。
 名前を変えても過去の投稿には反映されないというトレードオフを承知の上で採用した。
 
+ただしこの値をブラウザから送らせると、RLS は `user_id` しか検証しないため
+本人のまま好きな表示名を名乗れてしまう。そこで `user_id` と `user_name` は
+クライアントから送らず、BEFORE INSERT トリガー `set_post_author` が
+ログイン中のユーザーの値で必ず上書きするようにした。
+
+```sql
+new.user_id := auth.uid();
+```
+
 ## 詰まった点と解決
 
 ### SVGの座標系で上下が逆になった
@@ -112,6 +121,8 @@ SVGは後に書いた要素が手前に来る。丸を先に描いたせいで�
 ### 1. Supabase
 
 プロジェクトを作成し、SQL Editor で `supabase/schema.sql` を実行する。
+既存のプロジェクトでも、`set_post_author` トリガーを反映するために再実行する
+（`create or replace` と `if not exists` で書いてあるので何度流しても問題ない）。
 
 ### 2. Googleログイン
 

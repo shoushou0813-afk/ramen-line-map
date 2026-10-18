@@ -1,16 +1,12 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import { createPost, uploadPostImage } from "../lib/api/posts";
 import { GENRES } from "../data/lines";
 
-async function uploadImage(file, userId) {
-  const ext = file.name.split(".").pop();
-  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage.from("post-images").upload(path, file);
-  if (uploadError) throw uploadError;
-
-  const { data } = supabase.storage.from("post-images").getPublicUrl(path);
-  return data.publicUrl;
+/** 入力内容に問題があればエラーメッセージを返す。問題がなければ空文字 */
+function validateInput({ shopName, rating }) {
+  if (!shopName.trim()) return "店名を入力してください";
+  if (rating === 0) return "評価を選択してください";
+  return "";
 }
 
 export default function PostForm({ session, stationId, onPosted }) {
@@ -31,22 +27,29 @@ export default function PostForm({ session, stationId, onPosted }) {
     setImagePreview(file ? URL.createObjectURL(file) : "");
   }
 
+  function resetForm() {
+    setShopName("");
+    setMemo("");
+    setGenre(GENRES[0]);
+    setRating(0);
+    setImageFile(null);
+    setImagePreview("");
+  }
+
   async function handleSubmit() {
-    if (!shopName.trim()) {
-      setError("店名を入力してください");
+    const validationError = validateInput({ shopName, rating });
+    if (validationError) {
+      setError(validationError);
       return;
     }
-    if (rating === 0) {
-      setError("評価を選択してください");
-      return;
-    }
+
     setSaving(true);
     setError("");
 
     let imageUrl = null;
     if (imageFile) {
       try {
-        imageUrl = await uploadImage(imageFile, session.user.id);
+        imageUrl = await uploadPostImage(imageFile, session.user.id);
       } catch (uploadError) {
         console.error(uploadError);
         setSaving(false);
@@ -55,34 +58,25 @@ export default function PostForm({ session, stationId, onPosted }) {
       }
     }
 
-    // user_id は RLS のポリシーと突き合わせられるので、必ず本人の id を入れる。
-    // user_name は表示のたびに auth 側を引きに行くのが面倒なので、
-    // 投稿時点の名前をそのまま持たせている（あえて非正規化）
-    const { error: insertError } = await supabase.from("posts").insert({
-      station_id: stationId,
-      shop_name: shopName.trim(),
-      genre,
-      memo: memo.trim() || null,
-      rating,
-      image_url: imageUrl,
-      user_id: session.user.id,
-      user_name: session.user.user_metadata?.name ?? "名無し",
-    });
-
-    setSaving(false);
-
-    if (insertError) {
-      setError("保存に失敗しました。もう一度試してください。");
+    try {
+      await createPost({
+        session,
+        stationId,
+        shopName: shopName.trim(),
+        genre,
+        memo: memo.trim() || null,
+        rating,
+        imageUrl,
+      });
+    } catch (insertError) {
       console.error(insertError);
+      setSaving(false);
+      setError("保存に失敗しました。もう一度試してください。");
       return;
     }
 
-    setShopName("");
-    setMemo("");
-    setGenre(GENRES[0]);
-    setRating(0);
-    setImageFile(null);
-    setImagePreview("");
+    setSaving(false);
+    resetForm();
     onPosted();
   }
 

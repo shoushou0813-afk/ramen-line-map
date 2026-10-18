@@ -1,4 +1,5 @@
-import { supabase } from "../lib/supabase";
+import { useState } from "react";
+import { deletePost } from "../lib/api/posts";
 import Stars from "./Stars";
 
 function formatDate(iso) {
@@ -6,28 +7,21 @@ function formatDate(iso) {
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-// 画像の公開URLから storage 上のパスを取り出す（バケット名の後ろがパス）
-function storagePathFromUrl(url) {
-  return url.split("/post-images/")[1] ?? null;
-}
-
 export default function PostList({ posts, session, onChanged }) {
+  const [deleteError, setDeleteError] = useState("");
+
   async function handleDelete(post) {
-    // RLS で本人以外は消せないようにしてあるので、ここでは確認だけ取る
+    // 本人以外が削除できないことは RLS で保証しているので、ここでは確認だけ取る
     if (!window.confirm("この記録を削除しますか？")) return;
 
-    const { error } = await supabase.from("posts").delete().eq("id", post.id);
-    if (error) {
+    try {
+      await deletePost(post);
+      setDeleteError("");
+      onChanged();
+    } catch (error) {
       console.error(error);
-      return;
+      setDeleteError("削除に失敗しました。もう一度試してください。");
     }
-
-    if (post.image_url) {
-      const path = storagePathFromUrl(post.image_url);
-      if (path) await supabase.storage.from("post-images").remove([path]);
-    }
-
-    onChanged();
   }
 
   if (posts.length === 0) {
@@ -35,7 +29,9 @@ export default function PostList({ posts, session, onChanged }) {
   }
 
   return (
-    <ul className="post-list">
+    <>
+      {deleteError && <p className="error">{deleteError}</p>}
+      <ul className="post-list">
       {posts.map((p) => (
         <li key={p.id} className="post">
           <div className="post-head">
@@ -57,6 +53,7 @@ export default function PostList({ posts, session, onChanged }) {
           </div>
         </li>
       ))}
-    </ul>
+      </ul>
+    </>
   );
 }

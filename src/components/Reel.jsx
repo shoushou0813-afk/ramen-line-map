@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { fetchLatestPosts } from "../lib/api/posts";
 import { stationName } from "../data/lines";
 import Stars from "./Stars";
 
@@ -7,21 +7,20 @@ import Stars from "./Stars";
 export default function Reel() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    let alive = true; // 読み込み中にタブが切り替わった時に setState しないための目印
+    let alive = true; // 読み込み中にタブが切り替わったとき、画面から消えた部品の状態を更新しないための目印
 
     (async () => {
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (!alive) return;
-      if (error) console.error(error);
-      setPosts(data ?? []);
-      setLoading(false);
+      try {
+        const latest = await fetchLatestPosts(50);
+        if (alive) setPosts(latest);
+      } catch (loadError) {
+        console.error(loadError);
+        if (alive) setError("記録を読み込めませんでした。ページを再読み込みしてください。");
+      }
+      if (alive) setLoading(false);
     })();
 
     return () => {
@@ -30,6 +29,7 @@ export default function Reel() {
   }, []);
 
   if (loading) return <p className="empty">読み込み中...</p>;
+  if (error) return <p className="error">{error}</p>;
   if (posts.length === 0) return <p className="empty">まだ記録がありません。</p>;
 
   return (

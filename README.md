@@ -13,6 +13,7 @@
 - **路線図タブ** … 5路線（中央線 / 山手線 / 田園都市線・半蔵門線 / 東横線 / 総武線）を切り替えて駅を選び、その駅のラーメン記録を見る・投稿する
 - **リールタブ** … 路線に関係なく新着50件を流し見する
 - 投稿には5段階の星評価と写真を添えられる（写真は Supabase Storage に保存）
+- 食べた日を投稿時に選べる（初期値は今日。未来の日付は選べない）
 - Googleログイン。未ログインでも閲覧はできるが、投稿はできない
 - 表示名はGoogleアカウントの名前とは別に、ヘッダーの「名前を変更」から自由に決められる（20文字以内）
 
@@ -154,7 +155,8 @@ npm test
 
 `src/data/lines.js` に対する単体テストを [src/data/lines.test.js](src/data/lines.test.js) に、
 件数の集計と画像パスの取り出しに対する単体テストを [src/lib/api/posts.test.js](src/lib/api/posts.test.js) に、
-表示名の選び方と入力チェックに対する単体テストを [src/lib/api/profile.test.js](src/lib/api/profile.test.js) に置いている。
+表示名の選び方と入力チェックに対する単体テストを [src/lib/api/profile.test.js](src/lib/api/profile.test.js) に、
+食べた日の表示と入力チェックに対する単体テストを [src/lib/date.test.js](src/lib/date.test.js) に置いている。
 路線データが崩れると実害が出る箇所を確認している。
 
 - `LINE_ORDER` に並ぶ路線が `LINES` に実在するか
@@ -173,6 +175,7 @@ src/
 ├─ lib/supabase.js         Supabaseクライアントの生成
 ├─ lib/api/posts.js        投稿の取得・保存・削除（Supabase呼び出しはここに集約）
 ├─ lib/api/profile.js      表示名の取得・保存
+├─ lib/date.js             日付の表示と入力チェック
 └─ components/
    ├─ LineMap.jsx          SVGの路線図
    ├─ NameEditor.jsx       ヘッダーの表示名と「名前を変更」

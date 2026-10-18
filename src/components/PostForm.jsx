@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { createPost, uploadPostImage } from "../lib/api/posts";
 import { GENRES } from "../data/lines";
+import { toDateInputValue, validateVisitedOn } from "../lib/date";
 
 /** 入力内容に問題があればエラーメッセージを返す。問題がなければ空文字 */
-function validateInput({ shopName, rating }) {
+function validateInput({ shopName, rating, visitedOn }) {
   if (!shopName.trim()) return "店名を入力してください";
   if (rating === 0) return "評価を選択してください";
-  return "";
+  return validateVisitedOn(visitedOn);
 }
 
 export default function PostForm({ session, stationId, onPosted }) {
@@ -14,6 +15,7 @@ export default function PostForm({ session, stationId, onPosted }) {
   const [genre, setGenre] = useState(GENRES[0]);
   const [memo, setMemo] = useState("");
   const [rating, setRating] = useState(0);
+  const [visitedOn, setVisitedOn] = useState(() => toDateInputValue(new Date()));
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [saving, setSaving] = useState(false);
@@ -32,12 +34,13 @@ export default function PostForm({ session, stationId, onPosted }) {
     setMemo("");
     setGenre(GENRES[0]);
     setRating(0);
+    setVisitedOn(toDateInputValue(new Date()));
     setImageFile(null);
     setImagePreview("");
   }
 
   async function handleSubmit() {
-    const validationError = validateInput({ shopName, rating });
+    const validationError = validateInput({ shopName, rating, visitedOn });
     if (validationError) {
       setError(validationError);
       return;
@@ -66,6 +69,7 @@ export default function PostForm({ session, stationId, onPosted }) {
         genre,
         memo: memo.trim() || null,
         rating,
+        visitedOn,
         imageUrl,
       });
     } catch (insertError) {
@@ -121,6 +125,18 @@ export default function PostForm({ session, stationId, onPosted }) {
           </button>
         ))}
       </div>
+
+      <label className="date-field">
+        食べた日
+        <input
+          className="input"
+          type="date"
+          value={visitedOn}
+          max={toDateInputValue(new Date())}
+          onChange={(e) => setVisitedOn(e.target.value)}
+          disabled={!loggedIn || saving}
+        />
+      </label>
 
       <textarea
         className="input textarea"

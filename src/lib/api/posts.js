@@ -70,13 +70,14 @@ export async function uploadPostImage(file, userId) {
  * user_id は RLS のポリシーで本人確認に使うため、必ずログイン中のユーザーの id を入れる。
  * user_name は表示のたびに認証情報を取りに行かずに済むよう、投稿時点の表示名を保存している（意図的な非正規化）。
  */
-export async function createPost({ session, stationId, shopName, genre, memo, rating, imageUrl }) {
+export async function createPost({ session, stationId, shopName, genre, memo, rating, visitedOn, imageUrl }) {
   const { error } = await supabase.from("posts").insert({
     station_id: stationId,
     shop_name: shopName,
     genre,
     memo,
     rating,
+    visited_on: visitedOn,
     image_url: imageUrl,
     user_id: session.user.id,
     user_name: displayName(session.user),

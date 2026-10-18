@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { deletePost } from "../lib/api/posts";
 import { postDate } from "../lib/date";
-import { sortPosts } from "../lib/sortPosts";
+import { DEFAULT_SORT, sortPosts } from "../lib/sortPosts";
 import SortSelect from "./SortSelect";
 import Stars from "./Stars";
 
 export default function PostList({ posts, session, onChanged }) {
   const [deleteError, setDeleteError] = useState("");
-  const [sortId, setSortId] = useState("posted");
+  const [sortId, setSortId] = useState(DEFAULT_SORT);
 
   async function handleDelete(post) {
     // 本人以外が削除できないことは RLS で保証しているので、ここでは確認だけ取る

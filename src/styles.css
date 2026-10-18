@@ -421,3 +421,21 @@ body {
   width: auto;
   margin: 0;
 }
+
+/* --- 一番上に戻るボタン --- */
+.back-to-top {
+  position: fixed;
+  right: 16px;
+  /* iPhone の画面下のバーと重ならないよう、安全領域があればその分だけ上げる（なければ 0 として扱われる） */
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 10;
+}

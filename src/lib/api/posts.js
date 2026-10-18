@@ -1,5 +1,6 @@
 import { supabase } from "../supabase";
 import { displayName } from "./profile";
+import { stationIdsMatching } from "../../data/lines";
 
 // 投稿まわりの Supabase 呼び出しはこのファイルにまとめる。
 // 画面の部品からは supabase.from() を直接呼ばず、ここの関数だけを使う。
@@ -51,17 +52,38 @@ export function shopNamePattern(query) {
   return `%${escaped}%`;
 }
 
-/**
- * 路線に関係なく、新しい投稿を最大 limit 件取得する。
- * shopQuery を渡すと、店名にその文字を含む投稿だけに絞る（大文字・小文字は区別しない）。
- */
-export async function fetchLatestPosts(limit = 50, shopQuery = "") {
-  let request = supabase.from("posts").select("*");
-  if (shopQuery.trim()) request = request.ilike("shop_name", shopNamePattern(shopQuery));
+/** 複数の検索結果をまとめ、同じ投稿を1つにして新しい順に limit 件返す */
+export function mergeNewest(lists, limit) {
+  const byId = new Map();
+  for (const post of lists.flat()) byId.set(post.id, post);
+  return [...byId.values()]
+    .sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0))
+    .slice(0, limit);
+}
 
-  const { data, error } = await request.order("created_at", { ascending: false }).limit(limit);
+async function newestPosts(limit, narrow = (request) => request) {
+  const { data, error } = await narrow(supabase.from("posts").select("*"))
+    .order("created_at", { ascending: false })
+    .limit(limit);
   if (error) throw error;
   return data ?? [];
+}
+
+/**
+ * 路線に関係なく、新しい投稿を最大 limit 件取得する。
+ * query を渡すと、店名か駅名にその文字を含む投稿だけに絞る（店名は大文字・小文字を区別しない）。
+ * 駅名は DB に入っておらず lines.js にしかないので、先に駅 id に直してから探す。
+ * 店名で探す問い合わせと駅で探す問い合わせを別々に投げ、結果をまとめる。
+ */
+export async function fetchLatestPosts(limit = 50, query = "") {
+  if (!query.trim()) return newestPosts(limit);
+
+  const stationIds = stationIdsMatching(query);
+  const [byShop, byStation] = await Promise.all([
+    newestPosts(limit, (request) => request.ilike("shop_name", shopNamePattern(query))),
+    stationIds.length > 0 ? newestPosts(limit, (request) => request.in("station_id", stationIds)) : [],
+  ]);
+  return mergeNewest([byShop, byStation], limit);
 }
 
 /** 画像をアップロードし、公開URLを返す。ファイル名の衝突を避けるため UUID を使う */

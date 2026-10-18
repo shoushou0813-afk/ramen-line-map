@@ -150,3 +150,13 @@ export function stationIdsMatching(query) {
 }
 
 export const GENRES = ["家系", "二郎系", "醤油", "味噌", "塩", "つけ麺", "その他"];
+
+/**
+ * 検索語に当てはまるラーメンの種類を返す。
+ * 「二郎」のように種類名の一部でも、「家系ラーメン」のように種類名を含む言い方でも探せるようにする。
+ */
+export function genresMatching(query) {
+  const keyword = query.trim();
+  if (!keyword) return [];
+  return GENRES.filter((genre) => genre.includes(keyword) || keyword.includes(genre));
+}

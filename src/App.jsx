@@ -6,6 +6,7 @@ import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
 import Reel from "./components/Reel";
 import NameEditor from "./components/NameEditor";
+import BackToTop from "./components/BackToTop";
 
 const MODES = [
   { id: "map", label: "路線図" },
@@ -153,6 +154,8 @@ export default function App() {
           <Reel />
         </section>
       )}
+
+      <BackToTop />
     </div>
   );
 }

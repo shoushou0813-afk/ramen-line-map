@@ -1,6 +1,6 @@
 import { supabase } from "../supabase";
 import { displayName } from "./profile";
-import { stationIdsMatching } from "../../data/lines";
+import { genresMatching, stationIdsMatching } from "../../data/lines";
 
 // 投稿まわりの Supabase 呼び出しはこのファイルにまとめる。
 // 画面の部品からは supabase.from() を直接呼ばず、ここの関数だけを使う。
@@ -71,19 +71,21 @@ async function newestPosts(limit, narrow = (request) => request) {
 
 /**
  * 路線に関係なく、新しい投稿を最大 limit 件取得する。
- * query を渡すと、店名か駅名にその文字を含む投稿だけに絞る（店名は大文字・小文字を区別しない）。
- * 駅名は DB に入っておらず lines.js にしかないので、先に駅 id に直してから探す。
- * 店名で探す問い合わせと駅で探す問い合わせを別々に投げ、結果をまとめる。
+ * query を渡すと、店名・駅名・ラーメンの種類のどれかに当てはまる投稿だけに絞る（店名は大文字・小文字を区別しない）。
+ * 駅名は DB に入っておらず lines.js にしかないので、先に駅 id に直してから探す。種類も lines.js の一覧から当てはまるものを選ぶ。
+ * 店名・駅・種類で探す問い合わせを別々に投げ、結果をまとめる。
  */
 export async function fetchLatestPosts(limit = 50, query = "") {
   if (!query.trim()) return newestPosts(limit);
 
   const stationIds = stationIdsMatching(query);
-  const [byShop, byStation] = await Promise.all([
+  const genres = genresMatching(query);
+  const [byShop, byStation, byGenre] = await Promise.all([
     newestPosts(limit, (request) => request.ilike("shop_name", shopNamePattern(query))),
     stationIds.length > 0 ? newestPosts(limit, (request) => request.in("station_id", stationIds)) : [],
+    genres.length > 0 ? newestPosts(limit, (request) => request.in("genre", genres)) : [],
   ]);
-  return mergeNewest([byShop, byStation], limit);
+  return mergeNewest([byShop, byStation, byGenre], limit);
 }
 
 /** 画像をアップロードし、公開URLを返す。ファイル名の衝突を避けるため UUID を使う */

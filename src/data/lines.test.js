@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { LINES, LINE_ORDER, stationName, stationIdsMatching } from "./lines.js";
+import { LINES, LINE_ORDER, stationName, stationIdsMatching, genresMatching } from "./lines.js";
 
 describe("lines.js", () => {
   it("LINE_ORDERの路線がすべてLINESに存在する", () => {
@@ -49,5 +49,20 @@ describe("stationIdsMatching", () => {
   it("空欄や、どの駅にも当たらない文字なら空の配列を返す", () => {
     expect(stationIdsMatching("  ")).toEqual([]);
     expect(stationIdsMatching("札幌")).toEqual([]);
+  });
+});
+
+describe("genresMatching", () => {
+  it("種類名の一部でも探せる", () => {
+    expect(genresMatching("二郎")).toEqual(["二郎系"]);
+  });
+
+  it("「家系ラーメン」のように種類名を含む言い方でも探せる", () => {
+    expect(genresMatching("家系ラーメン")).toEqual(["家系"]);
+  });
+
+  it("空欄や、どの種類にも当たらない文字なら空の配列を返す", () => {
+    expect(genresMatching(" ")).toEqual([]);
+    expect(genresMatching("一蘭")).toEqual([]);
   });
 });

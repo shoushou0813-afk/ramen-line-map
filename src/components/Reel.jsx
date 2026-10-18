@@ -8,7 +8,7 @@ import Stars from "./Stars";
 // 入力が止まってから検索するまでの待ち時間（ミリ秒）。1文字打つたびに通信しないようにする
 const SEARCH_DELAY = 300;
 
-// 路線に関係なく、新しい投稿50件を流し見するタブ。店名・駅名で検索でき、並び順も選べる
+// 路線に関係なく、新しい投稿50件を流し見するタブ。店名・駅名・ラーメンの種類で検索でき、並び順も選べる
 export default function Reel() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,10 +47,10 @@ export default function Reel() {
       <input
         className="input reel-search"
         type="search"
-        placeholder="店名・駅名で検索"
+        placeholder="店名・駅名・種類で検索"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        aria-label="店名・駅名で検索"
+        aria-label="店名・駅名・種類で検索"
       />
       <SortSelect value={sortId} onChange={setSortId} />
 

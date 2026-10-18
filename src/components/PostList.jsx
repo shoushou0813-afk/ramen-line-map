@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { deletePost } from "../lib/api/posts";
+import { postDate } from "../lib/date";
 import Stars from "./Stars";
-
-function formatDate(iso) {
-  const d = new Date(iso);
-  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
-}
 
 export default function PostList({ posts, session, onChanged }) {
   const [deleteError, setDeleteError] = useState("");
@@ -43,7 +39,7 @@ export default function PostList({ posts, session, onChanged }) {
           {p.image_url && <img className="post-image" src={p.image_url} alt={p.shop_name} loading="lazy" />}
           <div className="post-foot">
             <span>
-              {p.user_name} ・ {formatDate(p.created_at)}
+              {p.user_name} ・ {postDate(p)}
             </span>
             {session?.user?.id === p.user_id && (
               <button className="link-button" onClick={() => handleDelete(p)}>

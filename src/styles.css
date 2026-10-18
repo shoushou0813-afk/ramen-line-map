@@ -238,6 +238,16 @@ body {
   resize: vertical;
 }
 
+.date-field {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.date-field .input {
+  margin-top: 4px;
+}
+
 .error {
   color: #c0392b;
   font-size: 14px;

@@ -402,3 +402,18 @@ body {
     transition: none !important;
   }
 }
+
+.sort-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 4px;
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.sort-select .input {
+  width: auto;
+  margin: 0;
+}

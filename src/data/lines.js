@@ -142,4 +142,11 @@ export function stationName(id) {
   return STATION_NAMES[id] ?? id;
 }
 
+/** 駅名にその文字を含む駅の id を返す。「新宿駅」のように最後に「駅」を付けて入力されても探せるようにする */
+export function stationIdsMatching(query) {
+  const keyword = query.trim().replace(/駅$/, "");
+  if (!keyword) return [];
+  return Object.keys(STATION_NAMES).filter((id) => STATION_NAMES[id].includes(keyword));
+}
+
 export const GENRES = ["家系", "二郎系", "醤油", "味噌", "塩", "つけ麺", "その他"];

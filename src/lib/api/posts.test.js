@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 // テストでは Supabase に接続しないので、クライアントを空のものに差し替える
 vi.mock("../supabase", () => ({ supabase: {} }));
 
-import { countByStation, storagePathFromUrl } from "./posts.js";
+import { countByStation, mergeNewest, shopNamePattern, storagePathFromUrl } from "./posts.js";
 
 describe("countByStation", () => {
   it("駅IDごとに件数を数える", () => {
@@ -24,5 +24,29 @@ describe("storagePathFromUrl", () => {
 
   it("バケット名を含まないURLなら null を返す", () => {
     expect(storagePathFromUrl("https://example.com/other/abc.jpg")).toBeNull();
+  });
+});
+
+describe("shopNamePattern", () => {
+  it("前後の空白を除いて、部分一致のパターンにする", () => {
+    expect(shopNamePattern("  一蘭 ")).toBe("%一蘭%");
+  });
+
+  it("% と _ と \\ は文字そのものとして検索されるよう打ち消す", () => {
+    expect(shopNamePattern("100%_ラーメン\\")).toBe("%100\\%\\_ラーメン\\\\%");
+  });
+});
+
+describe("mergeNewest", () => {
+  const a = { id: "a", created_at: "2026-10-01T00:00:00Z" };
+  const b = { id: "b", created_at: "2026-10-03T00:00:00Z" };
+  const c = { id: "c", created_at: "2026-10-02T00:00:00Z" };
+
+  it("店名と駅の両方で見つかった投稿は1つにまとめ、新しい順に並べる", () => {
+    expect(mergeNewest([[a, b], [b, c]], 50).map((p) => p.id)).toEqual(["b", "c", "a"]);
+  });
+
+  it("limit 件までに切り詰める", () => {
+    expect(mergeNewest([[a, b, c]], 2).map((p) => p.id)).toEqual(["b", "c"]);
   });
 });

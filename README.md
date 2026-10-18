@@ -147,7 +147,8 @@ npm run dev
 npm test
 ```
 
-`src/data/lines.js` に対する単体テストを [src/data/lines.test.js](src/data/lines.test.js) に置いている。
+`src/data/lines.js` に対する単体テストを [src/data/lines.test.js](src/data/lines.test.js) に、
+件数の集計と画像パスの取り出しに対する単体テストを [src/lib/api/posts.test.js](src/lib/api/posts.test.js) に置いている。
 路線データが崩れると実害が出る箇所を確認している。
 
 - `LINE_ORDER` に並ぶ路線が `LINES` に実在するか
@@ -161,9 +162,10 @@ GitHub Actions（[.github/workflows/test.yml](.github/workflows/test.yml)）で�
 
 ```
 src/
-├─ App.jsx                 タブ・ログイン状態・データ取得
+├─ App.jsx                 タブ・ログイン状態・画面全体の組み立て
 ├─ data/lines.js           路線と駅の座標データ
-├─ lib/supabase.js
+├─ lib/supabase.js         Supabaseクライアントの生成
+├─ lib/api/posts.js        投稿の取得・保存・削除（Supabase呼び出しはここに集約）
 └─ components/
    ├─ LineMap.jsx          SVGの路線図
    ├─ StationPanel.jsx     駅ごとの投稿エリア

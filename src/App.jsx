@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "./lib/supabase";
+import { fetchPostsByStation, fetchStationCounts } from "./lib/api/posts";
 import { LINES, LINE_ORDER } from "./data/lines";
 import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
@@ -17,46 +18,39 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [counts, setCounts] = useState({});
   const [posts, setPosts] = useState([]);
+  const [countsError, setCountsError] = useState("");
+  const [postsError, setPostsError] = useState("");
 
   // --- ログイン状態 ---------------------------------------------------
   useEffect(() => {
-    // 初回はすでにログイン済みかを取りに行く（リロードしてもログインが続くように）
+    // 初回は、すでにログイン済みかを確認する（リロードしてもログイン状態を保つため）
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
 
-    // 以降のログイン／ログアウトはこっちで拾う
+    // 以降のログイン・ログアウトはここで受け取る
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
   }, []);
 
   // --- 駅ごとの件数 ---------------------------------------------------
-  // 駅ごとに問い合わせると13回通信が飛ぶので、station_id だけ全部取って
-  // 手元で数える方式にした。件数が数万件を超えたら SQL 側で group by に変える
   const loadCounts = useCallback(async () => {
-    const { data, error } = await supabase.from("posts").select("station_id");
-    if (error) {
+    try {
+      setCounts(await fetchStationCounts());
+      setCountsError("");
+    } catch (error) {
       console.error(error);
-      return;
+      setCountsError("記録の件数を読み込めませんでした。ページを再読み込みしてください。");
     }
-    const next = {};
-    for (const row of data) {
-      next[row.station_id] = (next[row.station_id] ?? 0) + 1;
-    }
-    setCounts(next);
   }, []);
 
   // --- 選択中の駅の投稿 -----------------------------------------------
   const loadPosts = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("station_id", stationId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      setPosts(await fetchPostsByStation(stationId));
+      setPostsError("");
+    } catch (error) {
       console.error(error);
-      return;
+      setPostsError("この駅の記録を読み込めませんでした。ページを再読み込みしてください。");
     }
-    setPosts(data ?? []);
   }, [stationId]);
 
   useEffect(() => {
@@ -132,6 +126,9 @@ export default function App() {
           )}
         </div>
       </header>
+
+      {countsError && <p className="error">{countsError}</p>}
+      {postsError && <p className="error">{postsError}</p>}
 
       {mode === "map" && (
         <>

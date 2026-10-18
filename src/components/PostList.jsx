@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { deletePost } from "../lib/api/posts";
 import { postDate } from "../lib/date";
+import { sortPosts } from "../lib/sortPosts";
+import SortSelect from "./SortSelect";
 import Stars from "./Stars";
 
 export default function PostList({ posts, session, onChanged }) {
   const [deleteError, setDeleteError] = useState("");
+  const [sortId, setSortId] = useState("posted");
 
   async function handleDelete(post) {
     // 本人以外が削除できないことは RLS で保証しているので、ここでは確認だけ取る
@@ -27,8 +30,9 @@ export default function PostList({ posts, session, onChanged }) {
   return (
     <>
       {deleteError && <p className="error">{deleteError}</p>}
+      <SortSelect value={sortId} onChange={setSortId} />
       <ul className="post-list">
-      {posts.map((p) => (
+      {sortPosts(posts, sortId).map((p) => (
         <li key={p.id} className="post">
           <div className="post-head">
             <span className="post-shop">{p.shop_name}</span>

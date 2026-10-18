@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { fetchLatestPosts } from "../lib/api/posts";
 import { stationName } from "../data/lines";
+import { sortPosts } from "../lib/sortPosts";
+import SortSelect from "./SortSelect";
 import Stars from "./Stars";
 
-// 路線に関係なく、新しい順に全投稿を流し見するタブ
+// 路線に関係なく、新しい投稿50件を流し見するタブ。並び順は選べる
 export default function Reel() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [sortId, setSortId] = useState("posted");
 
   useEffect(() => {
     let alive = true; // 読み込み中にタブが切り替わったとき、画面から消えた部品の状態を更新しないための目印
@@ -33,8 +36,10 @@ export default function Reel() {
   if (posts.length === 0) return <p className="empty">まだ記録がありません。</p>;
 
   return (
-    <div className="reel">
-      {posts.map((p) => (
+    <>
+      <SortSelect value={sortId} onChange={setSortId} />
+      <div className="reel">
+      {sortPosts(posts, sortId).map((p) => (
         <article key={p.id} className="reel-card">
           <div className="reel-station">{stationName(p.station_id)}</div>
           <div className="reel-shop">{p.shop_name}</div>
@@ -48,5 +53,6 @@ export default function Reel() {
         </article>
       ))}
     </div>
+    </>
   );
 }

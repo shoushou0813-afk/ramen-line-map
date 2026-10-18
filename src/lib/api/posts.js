@@ -42,13 +42,24 @@ export async function fetchPostsByStation(stationId) {
   return data ?? [];
 }
 
-/** 路線に関係なく、新しい投稿を最大 limit 件取得する */
-export async function fetchLatestPosts(limit = 50) {
-  const { data, error } = await supabase
-    .from("posts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(limit);
+/**
+ * 店名の部分一致検索に使う ilike のパターンを作る。
+ * % と _ は ilike では「何でもよい文字」の意味になるので、入力にそのまま含まれていたら \ で打ち消す。
+ */
+export function shopNamePattern(query) {
+  const escaped = query.trim().replace(/[\\%_]/g, (c) => `\\${c}`);
+  return `%${escaped}%`;
+}
+
+/**
+ * 路線に関係なく、新しい投稿を最大 limit 件取得する。
+ * shopQuery を渡すと、店名にその文字を含む投稿だけに絞る（大文字・小文字は区別しない）。
+ */
+export async function fetchLatestPosts(limit = 50, shopQuery = "") {
+  let request = supabase.from("posts").select("*");
+  if (shopQuery.trim()) request = request.ilike("shop_name", shopNamePattern(shopQuery));
+
+  const { data, error } = await request.order("created_at", { ascending: false }).limit(limit);
   if (error) throw error;
   return data ?? [];
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchLatestPosts } from "../lib/api/posts";
 import { stationName } from "../data/lines";
-import { sortPosts } from "../lib/sortPosts";
+import { DEFAULT_SORT, sortPosts } from "../lib/sortPosts";
 import SortSelect from "./SortSelect";
 import Stars from "./Stars";
 
@@ -10,7 +10,7 @@ export default function Reel() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [sortId, setSortId] = useState("posted");
+  const [sortId, setSortId] = useState(DEFAULT_SORT);
 
   useEffect(() => {
     let alive = true; // 読み込み中にタブが切り替わったとき、画面から消えた部品の状態を更新しないための目印

@@ -9,13 +9,12 @@ const posts = [
 const ids = (list) => list.map((p) => p.id);
 
 describe("sortPosts", () => {
-  it("標準は投稿が新しい順", () => {
-    expect(ids(sortPosts(posts, "posted"))).toEqual(["b", "c", "a"]);
+  it("日付順は食べた日が新しい順", () => {
+    expect(ids(sortPosts(posts, "date"))).toEqual(["c", "a", "b"]);
   });
 
-  it("食べた日が新しい順・古い順に並べられる", () => {
-    expect(ids(sortPosts(posts, "visitedDesc"))).toEqual(["c", "a", "b"]);
-    expect(ids(sortPosts(posts, "visitedAsc"))).toEqual(["b", "a", "c"]);
+  it("知らない並び順が来たら日付順にする", () => {
+    expect(ids(sortPosts(posts, "unknown"))).toEqual(["c", "a", "b"]);
   });
 
   it("評価が高い順に並べられる", () => {
@@ -24,7 +23,7 @@ describe("sortPosts", () => {
 
   it("食べた日がない投稿は、投稿した日で並べる", () => {
     const old = { id: "d", created_at: "2026-10-05T03:00:00Z", rating: 1 };
-    expect(ids(sortPosts([...posts, old], "visitedDesc"))).toEqual(["c", "d", "a", "b"]);
+    expect(ids(sortPosts([...posts, old], "date"))).toEqual(["c", "d", "a", "b"]);
   });
 
   it("元の配列は並べ替えない", () => {

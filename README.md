@@ -14,6 +14,7 @@
 - **リールタブ** … 路線に関係なく新着50件を流し見する
 - 投稿には5段階の星評価と写真を添えられる（写真は Supabase Storage に保存）
 - Googleログイン。未ログインでも閲覧はできるが、投稿はできない
+- 表示名はGoogleアカウントの名前とは別に、ヘッダーの「名前を変更」から自由に決められる（20文字以内）
 
 ## なぜこの構成にしたか
 
@@ -82,6 +83,10 @@ const { data } = await supabase.from("posts").select("station_id");
 投稿時点の名前を `posts.user_name` に持たせている。
 名前を変えても過去の投稿には反映されないというトレードオフを承知の上で採用した。
 
+表示名はSupabaseの `user_metadata` に `display_name` として保存している。
+名前1つのためにプロフィール用のテーブルを作るほどではないと判断した。
+Googleログインのたびに上書きされる `name` とは別のキーにしてあるので、ログインし直しても消えない。
+
 ## 詰まった点と解決
 
 ### SVGの座標系で上下が逆になった
@@ -148,7 +153,8 @@ npm test
 ```
 
 `src/data/lines.js` に対する単体テストを [src/data/lines.test.js](src/data/lines.test.js) に、
-件数の集計と画像パスの取り出しに対する単体テストを [src/lib/api/posts.test.js](src/lib/api/posts.test.js) に置いている。
+件数の集計と画像パスの取り出しに対する単体テストを [src/lib/api/posts.test.js](src/lib/api/posts.test.js) に、
+表示名の選び方と入力チェックに対する単体テストを [src/lib/api/profile.test.js](src/lib/api/profile.test.js) に置いている。
 路線データが崩れると実害が出る箇所を確認している。
 
 - `LINE_ORDER` に並ぶ路線が `LINES` に実在するか
@@ -166,8 +172,10 @@ src/
 ├─ data/lines.js           路線と駅の座標データ
 ├─ lib/supabase.js         Supabaseクライアントの生成
 ├─ lib/api/posts.js        投稿の取得・保存・削除（Supabase呼び出しはここに集約）
+├─ lib/api/profile.js      表示名の取得・保存
 └─ components/
    ├─ LineMap.jsx          SVGの路線図
+   ├─ NameEditor.jsx       ヘッダーの表示名と「名前を変更」
    ├─ StationPanel.jsx     駅ごとの投稿エリア
    ├─ PostForm.jsx
    ├─ PostList.jsx

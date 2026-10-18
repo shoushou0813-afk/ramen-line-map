@@ -1,4 +1,5 @@
 import { supabase } from "../supabase";
+import { displayName } from "./profile";
 
 // 投稿まわりの Supabase 呼び出しはこのファイルにまとめる。
 // 画面の部品からは supabase.from() を直接呼ばず、ここの関数だけを使う。
@@ -67,7 +68,7 @@ export async function uploadPostImage(file, userId) {
 /**
  * 投稿を保存する。
  * user_id は RLS のポリシーで本人確認に使うため、必ずログイン中のユーザーの id を入れる。
- * user_name は表示のたびに認証情報を取りに行かずに済むよう、投稿時点の名前を保存している（意図的な非正規化）。
+ * user_name は表示のたびに認証情報を取りに行かずに済むよう、投稿時点の表示名を保存している（意図的な非正規化）。
  */
 export async function createPost({ session, stationId, shopName, genre, memo, rating, imageUrl }) {
   const { error } = await supabase.from("posts").insert({
@@ -78,7 +79,7 @@ export async function createPost({ session, stationId, shopName, genre, memo, ra
     rating,
     image_url: imageUrl,
     user_id: session.user.id,
-    user_name: session.user.user_metadata?.name ?? "名無し",
+    user_name: displayName(session.user),
   });
   if (error) throw error;
 }

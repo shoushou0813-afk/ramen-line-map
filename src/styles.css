@@ -84,6 +84,26 @@ body {
   color: var(--muted);
 }
 
+.name-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.name-input {
+  width: 12em;
+  margin-bottom: 0;
+  padding: 8px 12px;
+}
+
+.name-error {
+  width: 100%;
+  text-align: center;
+  margin: 0;
+}
+
 .button {
   border: none;
   background: var(--chip);

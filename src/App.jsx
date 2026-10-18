@@ -5,6 +5,7 @@ import { LINES, LINE_ORDER } from "./data/lines";
 import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
 import Reel from "./components/Reel";
+import NameEditor from "./components/NameEditor";
 
 const MODES = [
   { id: "map", label: "路線図" },
@@ -114,7 +115,7 @@ export default function App() {
         <div className="auth">
           {session ? (
             <>
-              <span className="auth-name">{session.user.user_metadata?.name ?? "ログイン中"}</span>
+              <NameEditor user={session.user} />
               <button className="button" onClick={signOut}>
                 ログアウト
               </button>

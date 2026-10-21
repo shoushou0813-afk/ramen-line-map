@@ -44,3 +44,13 @@ export function genreCountsByUser(rows) {
   }
   return byUser;
 }
+
+/**
+ * ほかの人に見せる用の「ユーザーID → 種類ごとの件数」を作る。
+ * ランクを非公開にしている人は null にして、RankBadge が何も出さないようにする。
+ */
+export function hideRanks(genreCountsByUser, hiddenUserIds) {
+  const visible = { ...genreCountsByUser };
+  for (const userId of hiddenUserIds) visible[userId] = null;
+  return visible;
+}

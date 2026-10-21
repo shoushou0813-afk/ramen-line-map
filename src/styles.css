@@ -390,6 +390,20 @@ body {
   margin-top: 2px;
 }
 
+.rank-hidden-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  color: #444;
+  margin-bottom: 14px;
+  cursor: pointer;
+}
+
+.rank-hidden-toggle input {
+  margin: 2px 0 0;
+}
+
 .genre-counts {
   list-style: none;
   padding: 0;

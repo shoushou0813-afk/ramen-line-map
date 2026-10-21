@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { genreCountsByUser, postsToNextRank, rankFromCount, topGenre, userRank } from "./rank.js";
+import { genreCountsByUser, hideRanks, postsToNextRank, rankFromCount, topGenre, userRank } from "./rank.js";
 
 describe("rankFromCount", () => {
   it("投稿0件はランク5から始まる", () => {
@@ -57,5 +57,22 @@ describe("genreCountsByUser / userRank", () => {
 
   it("まだ投稿していない人はランク5・マークなし", () => {
     expect(userRank(undefined)).toMatchObject({ count: 0, rank: 5, genre: null });
+  });
+});
+
+describe("hideRanks", () => {
+  const counts = { u1: { 醤油: 2 }, u2: { 塩: 1 } };
+
+  it("非公開の人だけ null にする", () => {
+    expect(hideRanks(counts, new Set(["u1"]))).toEqual({ u1: null, u2: { 塩: 1 } });
+  });
+
+  it("まだ投稿していない人が非公開にしても null になる", () => {
+    expect(hideRanks(counts, new Set(["u3"])).u3).toBe(null);
+  });
+
+  it("元の対応表は変えない", () => {
+    hideRanks(counts, new Set(["u1"]));
+    expect(counts.u1).toEqual({ 醤油: 2 });
   });
 });

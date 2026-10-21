@@ -68,3 +68,27 @@ create policy "本人だけ削除できる（画像）"
     bucket_id = 'post-images'
     and (storage.foldername(name))[1] = auth.uid()::text
   );
+
+-- ランクの公開設定。hidden が true の人は、ほかの人の画面で名前の横にランクとマークを出さない。
+-- 行がない人は公開扱い。誰が非公開かは表示のために全員が読めるようにする
+create table if not exists public.rank_settings (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  hidden  boolean not null default false
+);
+
+alter table public.rank_settings enable row level security;
+
+drop policy if exists "誰でも読める（ランク設定）" on public.rank_settings;
+create policy "誰でも読める（ランク設定）"
+  on public.rank_settings for select
+  using (true);
+
+drop policy if exists "本人だけ作れる（ランク設定）" on public.rank_settings;
+create policy "本人だけ作れる（ランク設定）"
+  on public.rank_settings for insert
+  with check (auth.uid() = user_id);
+
+drop policy if exists "本人だけ変えられる（ランク設定）" on public.rank_settings;
+create policy "本人だけ変えられる（ランク設定）"
+  on public.rank_settings for update
+  using (auth.uid() = user_id);

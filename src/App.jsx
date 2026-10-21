@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "./lib/supabase";
 import { fetchPostsByStation, fetchStationCounts, fetchUserGenreCounts } from "./lib/api/posts";
+import { fetchHiddenRankUserIds } from "./lib/api/rankSettings";
+import { hideRanks } from "./lib/rank";
 import { LINES, LINE_ORDER } from "./data/lines";
 import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
@@ -24,6 +26,7 @@ export default function App() {
   const [counts, setCounts] = useState({});
   const [posts, setPosts] = useState([]);
   const [userGenreCounts, setUserGenreCounts] = useState({});
+  const [hiddenRankUserIds, setHiddenRankUserIds] = useState(() => new Set());
   const [countsError, setCountsError] = useState("");
   const [postsError, setPostsError] = useState("");
 
@@ -58,6 +61,16 @@ export default function App() {
     }
   }, []);
 
+  // --- ランクを非公開にしている人 -------------------------------------
+  // 読めなくても困らないので、エラーは画面に出さず全員公開として扱う
+  const loadHiddenRankUserIds = useCallback(async () => {
+    try {
+      setHiddenRankUserIds(await fetchHiddenRankUserIds());
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
   // --- 選択中の駅の投稿 -----------------------------------------------
   const loadPosts = useCallback(async () => {
     try {
@@ -76,6 +89,10 @@ export default function App() {
   useEffect(() => {
     loadUserGenreCounts();
   }, [loadUserGenreCounts]);
+
+  useEffect(() => {
+    loadHiddenRankUserIds();
+  }, [loadHiddenRankUserIds]);
 
   useEffect(() => {
     loadPosts();
@@ -101,6 +118,8 @@ export default function App() {
   }
 
   const line = LINES[lineId];
+  // 投稿一覧など、ほかの人も見る場所ではこちらを使う（非公開の人のランクは出さない）
+  const visibleGenreCounts = hideRanks(userGenreCounts, hiddenRankUserIds);
 
   return (
     <div className="page">
@@ -161,7 +180,7 @@ export default function App() {
             stationId={stationId}
             posts={posts}
             session={session}
-            userGenreCounts={userGenreCounts}
+            userGenreCounts={visibleGenreCounts}
             onChanged={refresh}
           />
         </>
@@ -170,7 +189,7 @@ export default function App() {
       {mode === "reel" && (
         <section className="card">
           <h2 className="card-title">リール</h2>
-          <Reel userGenreCounts={userGenreCounts} />
+          <Reel userGenreCounts={visibleGenreCounts} />
         </section>
       )}
 
@@ -178,7 +197,14 @@ export default function App() {
         <section className="card">
           <h2 className="card-title">マイアカウント</h2>
           {session ? (
-            <MyPage session={session} userGenreCounts={userGenreCounts} onChanged={refresh} />
+            <MyPage
+              session={session}
+              userGenreCounts={userGenreCounts}
+              visibleGenreCounts={visibleGenreCounts}
+              rankHidden={hiddenRankUserIds.has(session.user.id)}
+              onChanged={refresh}
+              onRankHiddenChanged={loadHiddenRankUserIds}
+            />
           ) : (
             <p className="empty">ログインすると、自分のランクと投稿の一覧を見られます。</p>
           )}

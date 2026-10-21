@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "./lib/supabase";
-import { fetchPostsByStation, fetchStationCounts } from "./lib/api/posts";
+import { fetchPostsByStation, fetchStationCounts, fetchUserGenreCounts } from "./lib/api/posts";
 import { LINES, LINE_ORDER } from "./data/lines";
 import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
 import Reel from "./components/Reel";
 import NameEditor from "./components/NameEditor";
 import BackToTop from "./components/BackToTop";
+import MyPage from "./components/MyPage";
+import RankBadge from "./components/RankBadge";
 
 const MODES = [
   { id: "map", label: "路線図" },
   { id: "reel", label: "リール" },
+  { id: "mypage", label: "マイアカウント" },
 ];
 
 export default function App() {
@@ -20,6 +23,7 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [counts, setCounts] = useState({});
   const [posts, setPosts] = useState([]);
+  const [userGenreCounts, setUserGenreCounts] = useState({});
   const [countsError, setCountsError] = useState("");
   const [postsError, setPostsError] = useState("");
 
@@ -44,6 +48,16 @@ export default function App() {
     }
   }, []);
 
+  // --- ランクとラーメンマーク用の、ユーザーごとの種類別件数 ---------------
+  // 読めなくても投稿は見られるので、エラーは画面に出さずマークなし（ランク5）のままにする
+  const loadUserGenreCounts = useCallback(async () => {
+    try {
+      setUserGenreCounts(await fetchUserGenreCounts());
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
   // --- 選択中の駅の投稿 -----------------------------------------------
   const loadPosts = useCallback(async () => {
     try {
@@ -60,14 +74,19 @@ export default function App() {
   }, [loadCounts]);
 
   useEffect(() => {
+    loadUserGenreCounts();
+  }, [loadUserGenreCounts]);
+
+  useEffect(() => {
     loadPosts();
   }, [loadPosts]);
 
-  // 投稿・削除の後は件数と一覧の両方を取り直す
+  // 投稿・削除の後は件数・ランク・一覧をすべて取り直す
   const refresh = useCallback(() => {
     loadCounts();
+    loadUserGenreCounts();
     loadPosts();
-  }, [loadCounts, loadPosts]);
+  }, [loadCounts, loadUserGenreCounts, loadPosts]);
 
   async function signIn() {
     await supabase.auth.signInWithOAuth({
@@ -115,14 +134,13 @@ export default function App() {
 
         <div className="auth">
           {session ? (
-            <>
-              <NameEditor user={session.user} />
-              <button className="button" onClick={signOut}>
+            <NameEditor user={session.user} badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} />}>
+              <button className="tab" onClick={signOut}>
                 ログアウト
               </button>
-            </>
+            </NameEditor>
           ) : (
-            <button className="button" onClick={signIn}>
+            <button className="tab" onClick={signIn}>
               Googleでログイン
             </button>
           )}
@@ -143,6 +161,7 @@ export default function App() {
             stationId={stationId}
             posts={posts}
             session={session}
+            userGenreCounts={userGenreCounts}
             onChanged={refresh}
           />
         </>
@@ -151,7 +170,18 @@ export default function App() {
       {mode === "reel" && (
         <section className="card">
           <h2 className="card-title">リール</h2>
-          <Reel />
+          <Reel userGenreCounts={userGenreCounts} />
+        </section>
+      )}
+
+      {mode === "mypage" && (
+        <section className="card">
+          <h2 className="card-title">マイアカウント</h2>
+          {session ? (
+            <MyPage session={session} userGenreCounts={userGenreCounts} onChanged={refresh} />
+          ) : (
+            <p className="empty">ログインすると、自分のランクと投稿の一覧を見られます。</p>
+          )}
         </section>
       )}
 

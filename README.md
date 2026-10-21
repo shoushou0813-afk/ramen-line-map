@@ -16,6 +16,9 @@
 - 食べた日を投稿時に選べる（初期値は今日。未来の日付は選べない）
 - Googleログイン。未ログインでも閲覧はできるが、投稿はできない
 - 表示名はGoogleアカウントの名前とは別に、ヘッダーの「名前を変更」から自由に決められる（20文字以内）
+- **ランク** … 投稿者名の隣に「ラーメンマーク + ランク」が出る。ランクは5から始まり、1件投稿するごとに1上がって最高20。
+  マークは一番多く投稿しているラーメンの種類で変わる（家系=海苔とほうれん草、二郎系=野菜山盛りに背脂・チャーシュー・にんにく、醤油=醤油さし、味噌=味噌のかたまり、塩=塩の瓶、つけ麺=箸で持ち上げた麺、その他=油そば）
+- **マイアカウントタブ** … 自分のランク・種類ごとの投稿数と、自分が投稿した記録の一覧を見られる（ここから削除もできる）
 
 ## なぜこの構成にしたか
 
@@ -156,7 +159,8 @@ npm test
 `src/data/lines.js` に対する単体テストを [src/data/lines.test.js](src/data/lines.test.js) に、
 件数の集計と画像パスの取り出しに対する単体テストを [src/lib/api/posts.test.js](src/lib/api/posts.test.js) に、
 表示名の選び方と入力チェックに対する単体テストを [src/lib/api/profile.test.js](src/lib/api/profile.test.js) に、
-食べた日の表示と入力チェックに対する単体テストを [src/lib/date.test.js](src/lib/date.test.js) に置いている。
+食べた日の表示と入力チェックに対する単体テストを [src/lib/date.test.js](src/lib/date.test.js) に、
+ランクとマークの種類の決め方に対する単体テストを [src/lib/rank.test.js](src/lib/rank.test.js) に置いている。
 路線データが崩れると実害が出る箇所を確認している。
 
 - `LINE_ORDER` に並ぶ路線が `LINES` に実在するか
@@ -176,6 +180,7 @@ src/
 ├─ lib/api/posts.js        投稿の取得・保存・削除（Supabase呼び出しはここに集約）
 ├─ lib/api/profile.js      表示名の取得・保存
 ├─ lib/date.js             日付の表示と入力チェック
+├─ lib/rank.js             投稿数からランク、一番多い種類からマークを決める
 └─ components/
    ├─ LineMap.jsx          SVGの路線図
    ├─ NameEditor.jsx       ヘッダーの表示名と「名前を変更」
@@ -183,6 +188,9 @@ src/
    ├─ StationPanel.jsx     駅ごとの投稿エリア
    ├─ PostForm.jsx
    ├─ PostList.jsx
+   ├─ MyPage.jsx           マイアカウント（自分のランクと投稿一覧）
+   ├─ RamenMark.jsx        ラーメンの種類ごとのマーク（SVG）
+   ├─ RankBadge.jsx        名前の隣に出す「マーク + ランク」
    ├─ Reel.jsx
    └─ Stars.jsx            星評価の表示
 supabase/schema.sql        テーブル定義とRLSポリシー

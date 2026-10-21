@@ -1,19 +1,45 @@
 import { GENRES } from "../data/lines";
 
-// 投稿数から決まるランクと、名前の横に出すラーメンマークの種類を計算する。
-// ランクは投稿0件で 5 から始まり、1件投稿するごとに 1 上がる。20 で頭打ち。
+// 投稿数から決まるレベルと称号、名前の横に出すラーメンマークの種類を計算する。
+// レベルは1件目の投稿で 1 になり、1件投稿するごとに 1 上がる。20 で頭打ち。投稿0件の人はレベルなし（0）。
 
-export const MIN_RANK = 5;
-export const MAX_RANK = 20;
+export const MAX_LEVEL = 20;
 
-/** 投稿数からランクを出す */
-export function rankFromCount(count) {
-  return Math.min(MAX_RANK, MIN_RANK + count);
+/** 投稿数からレベルを出す。投稿0件なら 0 */
+export function levelFromCount(count) {
+  return Math.min(MAX_LEVEL, count);
 }
 
-/** 次のランクまであと何件投稿すればいいか。最高ランクなら 0 */
-export function postsToNextRank(count) {
-  return rankFromCount(count) >= MAX_RANK ? 0 : 1;
+/** 次のレベルまであと何件投稿すればいいか。最高レベルなら 0 */
+export function postsToNextLevel(count) {
+  return levelFromCount(count) >= MAX_LEVEL ? 0 : 1;
+}
+
+// 称号の前半。レベルが min 以上なら使う（上から順に見る）
+const TITLE_STAGES = [
+  { min: 20, label: "カリスマ" },
+  { min: 15, label: "達人" },
+  { min: 10, label: "熟練" },
+  { min: 5, label: "一人前" },
+  { min: 1, label: "見習い" },
+];
+
+// 称号の後半。一番多く投稿している種類で決まる
+const GENRE_FANS = {
+  家系: "家系ラバー",
+  二郎系: "ジロリアン",
+  醤油: "醤油党",
+  味噌: "味噌党",
+  塩: "塩党",
+  つけ麺: "つけ麺党",
+  その他: "麺好き",
+};
+
+/** レベルと種類から称号を作る（例：見習いジロリアン）。レベル0なら null */
+export function titleFor(level, genre) {
+  const stage = TITLE_STAGES.find((s) => level >= s.min);
+  if (!stage) return null;
+  return stage.label + (GENRE_FANS[genre] ?? "ラーメン好き");
 }
 
 /**
@@ -29,10 +55,12 @@ export function topGenre(genreCounts) {
   return best;
 }
 
-/** ユーザー1人分のランク情報。投稿がまだない人もランク5・マークなしとして扱う */
+/** ユーザー1人分のレベル情報。投稿がまだない人はレベル0・マークなし・称号なしになる */
 export function userRank(genreCounts = {}) {
   const count = Object.values(genreCounts).reduce((sum, n) => sum + n, 0);
-  return { count, rank: rankFromCount(count), genre: topGenre(genreCounts), genreCounts };
+  const level = levelFromCount(count);
+  const genre = topGenre(genreCounts);
+  return { count, level, genre, title: titleFor(level, genre), genreCounts };
 }
 
 /** { user_id, genre } の配列から「ユーザーID → 種類ごとの件数」の対応表を作る */
@@ -47,7 +75,7 @@ export function genreCountsByUser(rows) {
 
 /**
  * ほかの人に見せる用の「ユーザーID → 種類ごとの件数」を作る。
- * ランクを非公開にしている人は null にして、RankBadge が何も出さないようにする。
+ * レベルを非公開にしている人は null にして、RankBadge が何も出さないようにする。
  */
 export function hideRanks(genreCountsByUser, hiddenUserIds) {
   const visible = { ...genreCountsByUser };

@@ -51,8 +51,8 @@ export default function App() {
     }
   }, []);
 
-  // --- ランクとラーメンマーク用の、ユーザーごとの種類別件数 ---------------
-  // 読めなくても投稿は見られるので、エラーは画面に出さずマークなし（ランク5）のままにする
+  // --- レベルとラーメンマーク用の、ユーザーごとの種類別件数 -------------
+  // 読めなくても投稿は見られるので、エラーは画面に出さずマークなしのままにする
   const loadUserGenreCounts = useCallback(async () => {
     try {
       setUserGenreCounts(await fetchUserGenreCounts());
@@ -61,7 +61,7 @@ export default function App() {
     }
   }, []);
 
-  // --- ランクを非公開にしている人 -------------------------------------
+  // --- レベルを非公開にしている人 -----------------------------------
   // 読めなくても困らないので、エラーは画面に出さず全員公開として扱う
   const loadHiddenRankUserIds = useCallback(async () => {
     try {
@@ -98,7 +98,7 @@ export default function App() {
     loadPosts();
   }, [loadPosts]);
 
-  // 投稿・削除の後は件数・ランク・一覧をすべて取り直す
+  // 投稿・削除の後は件数・レベル・一覧をすべて取り直す
   const refresh = useCallback(() => {
     loadCounts();
     loadUserGenreCounts();
@@ -118,7 +118,7 @@ export default function App() {
   }
 
   const line = LINES[lineId];
-  // 投稿一覧など、ほかの人も見る場所ではこちらを使う（非公開の人のランクは出さない）
+  // 投稿一覧など、ほかの人も見る場所ではこちらを使う（非公開の人のレベルは出さない）
   const visibleGenreCounts = hideRanks(userGenreCounts, hiddenRankUserIds);
 
   return (
@@ -153,7 +153,7 @@ export default function App() {
 
         <div className="auth">
           {session ? (
-            <NameEditor user={session.user} badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} />}>
+            <NameEditor user={session.user} badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} showTitle={false} />}>
               <button className="tab" onClick={signOut}>
                 ログアウト
               </button>
@@ -206,7 +206,7 @@ export default function App() {
               onRankHiddenChanged={loadHiddenRankUserIds}
             />
           ) : (
-            <p className="empty">ログインすると、自分のランクと投稿の一覧を見られます。</p>
+            <p className="empty">ログインすると、自分のレベル・称号と投稿の一覧を見られます。</p>
           )}
         </section>
       )}

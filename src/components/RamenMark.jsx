@@ -13,15 +13,28 @@ const SOUP_COLORS = {
 };
 
 const TOPPINGS = {
-  // 丼のふちに立てた海苔
+  // 丼のふちに立てた海苔と、ほうれん草
   家系: (
     <>
+      <ellipse cx="7.5" cy="10.3" rx="2.2" ry="1.2" fill="#2f6b2a" />
+      <ellipse cx="9.8" cy="9.8" rx="1.8" ry="1.1" fill="#3f8a36" />
+      <path d="M6.5 10 L10.5 9.6" stroke="#6fb05e" strokeWidth="0.4" />
       <rect x="14" y="2.5" width="3.2" height="8.5" fill="#1f3a24" />
       <rect x="17.6" y="3.5" width="3.2" height="7.5" fill="#2b4d31" />
     </>
   ),
-  // 山盛りの野菜
-  二郎系: <path d="M5.5 11 Q12 -1 18.5 11 Z" fill="#e6efcf" stroke="#9cbb63" strokeWidth="0.8" />,
+  // 山盛りの野菜に背脂、分厚いチャーシュー、にんにく
+  二郎系: (
+    <>
+      <rect x="2.6" y="5.4" width="4.6" height="5.6" rx="1" fill="#8b4a22" stroke="#c98a5a" strokeWidth="0.6" transform="rotate(-15 4.9 8.2)" />
+      <path d="M6.5 11 Q12 -1 17.5 11 Z" fill="#e6efcf" stroke="#9cbb63" strokeWidth="0.8" />
+      <circle cx="11" cy="4" r="0.9" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
+      <circle cx="12.8" cy="5.2" r="0.8" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
+      <circle cx="10.2" cy="6.4" r="0.7" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
+      <circle cx="13.6" cy="7.6" r="0.7" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
+      <path d="M17 11 Q19 8.4 21 11 Z" fill="#f3e3a4" />
+    </>
+  ),
   // 醤油さし
   醤油: (
     <>

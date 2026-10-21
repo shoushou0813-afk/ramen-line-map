@@ -35,6 +35,27 @@ const GENRE_FANS = {
   その他: "麺好き",
 };
 
+// マークの盛りの段階。その種類の投稿数が min 以上なら使う（上から順に見る）。
+// 今は二郎系だけが段階で見た目が変わる（野菜マシ → 背脂マシ → 豚マシ → 全マシマシ）
+const TOPPING_STAGES = [
+  { min: 20, stage: 4, label: "全マシマシ" },
+  { min: 15, stage: 3, label: "豚マシ" },
+  { min: 10, stage: 2, label: "背脂マシ" },
+  { min: 5, stage: 1, label: "野菜マシ" },
+  { min: 0, stage: 0, label: "" },
+];
+
+/** その種類の投稿数から、マークの盛りの段階（0〜4）を出す */
+export function toppingStage(genreCount) {
+  return TOPPING_STAGES.find((t) => genreCount >= t.min).stage;
+}
+
+/** 盛りの段階の名前（例：野菜マシ）。見た目が変わらない種類や段階0なら空文字 */
+export function toppingLabel(genre, genreCount) {
+  if (genre !== "二郎系") return "";
+  return TOPPING_STAGES.find((t) => genreCount >= t.min).label;
+}
+
 /** レベルと種類から称号を作る（例：見習いジロリアン）。レベル0なら null */
 export function titleFor(level, genre) {
   const stage = TITLE_STAGES.find((s) => level >= s.min);
@@ -60,7 +81,8 @@ export function userRank(genreCounts = {}) {
   const count = Object.values(genreCounts).reduce((sum, n) => sum + n, 0);
   const level = levelFromCount(count);
   const genre = topGenre(genreCounts);
-  return { count, level, genre, title: titleFor(level, genre), genreCounts };
+  const stage = genre ? toppingStage(genreCounts[genre]) : 0;
+  return { count, level, genre, stage, title: titleFor(level, genre), genreCounts };
 }
 
 /** { user_id, genre } の配列から「ユーザーID → 種類ごとの件数」の対応表を作る */

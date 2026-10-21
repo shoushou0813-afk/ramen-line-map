@@ -23,18 +23,7 @@ const TOPPINGS = {
       <rect x="17.6" y="3.5" width="3.2" height="7.5" fill="#2b4d31" />
     </>
   ),
-  // 山盛りの野菜に背脂、分厚いチャーシュー、にんにく
-  二郎系: (
-    <>
-      <rect x="2.6" y="5.4" width="4.6" height="5.6" rx="1" fill="#8b4a22" stroke="#c98a5a" strokeWidth="0.6" transform="rotate(-15 4.9 8.2)" />
-      <path d="M6.5 11 Q12 -1 17.5 11 Z" fill="#e6efcf" stroke="#9cbb63" strokeWidth="0.8" />
-      <circle cx="11" cy="4" r="0.9" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
-      <circle cx="12.8" cy="5.2" r="0.8" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
-      <circle cx="10.2" cy="6.4" r="0.7" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
-      <circle cx="13.6" cy="7.6" r="0.7" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
-      <path d="M17 11 Q19 8.4 21 11 Z" fill="#f3e3a4" />
-    </>
-  ),
+  // 二郎系は投稿数で盛りが変わるので、下の jiroToppings で描く
   // 醤油さし
   醤油: (
     <>
@@ -83,14 +72,67 @@ const TOPPINGS = {
   ),
 };
 
-export default function RamenMark({ genre, size = 18 }) {
+// 背脂の粒。盛りの段階ごとに、野菜の山からはみ出さない位置に置く
+const FAT_SPOTS = {
+  few: [
+    [11.6, 7],
+    [13.2, 8.2],
+  ],
+  many: [
+    [11, 5],
+    [13, 5.6],
+    [10, 7],
+    [12.2, 7.2],
+    [14.2, 8.4],
+    [9, 8.6],
+  ],
+  tower: [
+    [12, 2.6],
+    [11, 4],
+    [13, 4.6],
+    [10, 6.4],
+    [12.2, 6.8],
+    [14.2, 7.8],
+    [8.6, 8.6],
+    [15.6, 9.4],
+  ],
+};
+
+/**
+ * 二郎系の具。stage は二郎系の投稿数で決まる盛りの段階（0〜4）。
+ * 0：普通 / 1：野菜マシ / 2：背脂マシ / 3：豚マシ / 4：全マシマシ。段階が上がると前の段階の盛りも引き継ぐ
+ */
+function jiroToppings(stage) {
+  const mound = stage >= 4 ? "M4.5 11 Q12 -9 19.5 11 Z" : stage >= 1 ? "M5.5 11 Q12 -3 18.5 11 Z" : "M7 11 Q12 1 17 11 Z";
+  const fat = stage >= 4 ? FAT_SPOTS.tower : stage >= 2 ? FAT_SPOTS.many : FAT_SPOTS.few;
+  return (
+    <>
+      <rect x="2.6" y="5.4" width="4.6" height="5.6" rx="1" fill="#8b4a22" stroke="#c98a5a" strokeWidth="0.6" transform="rotate(-15 4.9 8.2)" />
+      {stage >= 3 && (
+        <rect x="16.8" y="5.4" width="4.6" height="5.6" rx="1" fill="#8b4a22" stroke="#c98a5a" strokeWidth="0.6" transform="rotate(15 19.1 8.2)" />
+      )}
+      <path d={mound} fill="#e6efcf" stroke="#9cbb63" strokeWidth="0.8" />
+      {fat.map(([cx, cy]) => (
+        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="0.8" fill="#fffdf5" stroke="#d9d2bd" strokeWidth="0.3" />
+      ))}
+      {stage >= 3 ? (
+        <ellipse cx="12" cy="11.2" rx={stage >= 4 ? 3 : 2} ry={stage >= 4 ? 1.3 : 0.9} fill="#f3e3a4" />
+      ) : (
+        <path d="M17 11 Q19 8.4 21 11 Z" fill="#f3e3a4" />
+      )}
+    </>
+  );
+}
+
+// stage は盛りの段階（0〜4）。今は二郎系だけが段階で見た目が変わる
+export default function RamenMark({ genre, size = 18, stage = 0 }) {
   const soup = SOUP_COLORS[genre] ?? "#eee";
   return (
     <svg className="ramen-mark" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
       <path d="M2 11 H22 A10 9 0 0 1 2 11 Z" fill="#c23a2b" />
       <path d="M4 15 H20" stroke="#fff" strokeWidth="0.8" strokeDasharray="1.6 1.2" />
       <ellipse cx="12" cy="11" rx="10" ry="2.2" fill={soup} stroke="#9e2b1f" strokeWidth="0.6" />
-      {TOPPINGS[genre]}
+      {genre === "二郎系" ? jiroToppings(stage) : TOPPINGS[genre]}
       <rect x="8" y="19.5" width="8" height="2" rx="1" fill="#9e2b1f" />
     </svg>
   );

@@ -3,13 +3,14 @@ import { fetchLatestPosts } from "../lib/api/posts";
 import { stationName } from "../data/lines";
 import { DEFAULT_SORT, sortPosts } from "../lib/sortPosts";
 import SortSelect from "./SortSelect";
+import RankBadge from "./RankBadge";
 import Stars from "./Stars";
 
 // 入力が止まってから検索するまでの待ち時間（ミリ秒）。1文字打つたびに通信しないようにする
 const SEARCH_DELAY = 300;
 
 // 路線に関係なく、新しい投稿50件を流し見するタブ。店名・駅名・ラーメンの種類で検索でき、並び順も選べる
-export default function Reel() {
+export default function Reel({ userGenreCounts }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -71,7 +72,10 @@ export default function Reel() {
               {p.memo && <p className="post-memo">{p.memo}</p>}
               {p.image_url && <img className="post-image" src={p.image_url} alt={p.shop_name} loading="lazy" />}
               <div className="post-foot">
-                <span>{p.user_name}</span>
+                <span className="post-author">
+                  {p.user_name}
+                  <RankBadge genreCounts={userGenreCounts[p.user_id]} />
+                </span>
               </div>
             </article>
           ))}

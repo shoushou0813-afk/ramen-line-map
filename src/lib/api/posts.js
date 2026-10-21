@@ -1,6 +1,7 @@
 import { supabase } from "../supabase";
 import { displayName } from "./profile";
 import { genresMatching, stationIdsMatching } from "../../data/lines";
+import { genreCountsByUser } from "../rank";
 
 // 投稿まわりの Supabase 呼び出しはこのファイルにまとめる。
 // 画面の部品からは supabase.from() を直接呼ばず、ここの関数だけを使う。
@@ -30,6 +31,27 @@ export async function fetchStationCounts() {
   const { data, error } = await supabase.from("posts").select("station_id");
   if (error) throw error;
   return countByStation(data);
+}
+
+/**
+ * ランクとラーメンマークを出すため、全員分の「ユーザーID → 種類ごとの件数」を取得する。
+ * 駅ごとの件数と同じく、必要な列だけをまとめて取得して手元で数える。
+ */
+export async function fetchUserGenreCounts() {
+  const { data, error } = await supabase.from("posts").select("user_id, genre");
+  if (error) throw error;
+  return genreCountsByUser(data);
+}
+
+/** 指定したユーザーの投稿を新しい順に取得する（マイアカウント用） */
+export async function fetchPostsByUser(userId) {
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
 }
 
 /** 指定した駅の投稿を新しい順に取得する */

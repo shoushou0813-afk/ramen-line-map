@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { deletePost } from "../lib/api/posts";
 import { postDate } from "../lib/date";
+import { stationName } from "../data/lines";
 import { DEFAULT_SORT, sortPosts } from "../lib/sortPosts";
 import SortSelect from "./SortSelect";
+import RankBadge from "./RankBadge";
 import Stars from "./Stars";
 
-export default function PostList({ posts, session, onChanged }) {
+// showStation を付けると駅名も出す（駅をまたいで並べるマイアカウント用）
+export default function PostList({ posts, session, userGenreCounts, onChanged, showStation = false }) {
   const [deleteError, setDeleteError] = useState("");
   const [sortId, setSortId] = useState(DEFAULT_SORT);
 
@@ -34,6 +37,7 @@ export default function PostList({ posts, session, onChanged }) {
       <ul className="post-list">
       {sortPosts(posts, sortId).map((p) => (
         <li key={p.id} className="post">
+          {showStation && <div className="reel-station">{stationName(p.station_id)}</div>}
           <div className="post-head">
             <span className="post-shop">{p.shop_name}</span>
             <span className="tag">{p.genre}</span>
@@ -42,8 +46,9 @@ export default function PostList({ posts, session, onChanged }) {
           {p.memo && <p className="post-memo">{p.memo}</p>}
           {p.image_url && <img className="post-image" src={p.image_url} alt={p.shop_name} loading="lazy" />}
           <div className="post-foot">
-            <span>
-              {p.user_name} ・ {postDate(p)}
+            <span className="post-author">
+              {p.user_name}
+              <RankBadge genreCounts={userGenreCounts[p.user_id]} /> ・ {postDate(p)}
             </span>
             {session?.user?.id === p.user_id && (
               <button className="link-button" onClick={() => handleDelete(p)}>

@@ -1,4 +1,5 @@
-// 名前の横に出すラーメンのマーク。一番多く投稿している種類によって、スープの色と具が変わる。
+// 名前の横に出すラーメンのマーク。一番多く投稿している種類によって、スープの色と上にのせる絵が変わる。
+// 味噌・醤油・塩は具ではなく、その調味料そのもの（味噌のかたまり・醤油さし・塩の瓶）を描いている。
 // 丼とスープは共通で、種類ごとに TOPPINGS の中身だけを差し替えている。
 
 const SOUP_COLORS = {
@@ -8,7 +9,7 @@ const SOUP_COLORS = {
   味噌: "#d9923a",
   塩: "#f1dc9a",
   つけ麺: "#5a2e10",
-  その他: "#d8c3a5",
+  その他: "#e3b85c", // 油そばの麺の色
 };
 
 const TOPPINGS = {
@@ -21,27 +22,33 @@ const TOPPINGS = {
   ),
   // 山盛りの野菜
   二郎系: <path d="M5.5 11 Q12 -1 18.5 11 Z" fill="#e6efcf" stroke="#9cbb63" strokeWidth="0.8" />,
-  // なると
+  // 醤油さし
   醤油: (
     <>
-      <circle cx="9" cy="10.4" r="2.2" fill="#fff" stroke="#e05587" strokeWidth="0.8" />
-      <path d="M9 10.4 m-1 0 a1 1 0 1 1 1 1" fill="none" stroke="#e05587" strokeWidth="0.6" />
+      <rect x="15" y="4" width="5" height="7.5" rx="1.3" fill="#2e1606" />
+      <rect x="15.6" y="6.6" width="3.8" height="2" fill="#fff" />
+      <rect x="15.8" y="1.6" width="3.4" height="2.8" rx="0.7" fill="#d7262e" />
+      <path d="M15.8 2.4 L14 1.8" stroke="#d7262e" strokeWidth="0.9" strokeLinecap="round" />
     </>
   ),
-  // コーン
+  // 味噌のかたまり
   味噌: (
     <>
-      <circle cx="8" cy="11" r="1.1" fill="#f6cf2b" />
-      <circle cx="10.4" cy="10.4" r="1.1" fill="#f6cf2b" />
-      <circle cx="12.8" cy="11" r="1.1" fill="#f6cf2b" />
-      <circle cx="15.2" cy="10.4" r="1.1" fill="#f6cf2b" />
+      <path d="M7.5 11 Q7 6 12 5.8 Q17 6 16.5 11 Z" fill="#b8692a" />
+      <path d="M9.5 8.5 Q12 7.4 14.5 8.5 M9 10 Q12 9 15 10" fill="none" stroke="#8a4a17" strokeWidth="0.6" />
     </>
   ),
-  // 半分に切った煮卵
+  // 塩の瓶と、ふりかけた塩の粒
   塩: (
     <>
-      <ellipse cx="14" cy="10.4" rx="2.8" ry="2" fill="#fff" stroke="#e2d2a8" strokeWidth="0.5" />
-      <circle cx="14" cy="10.4" r="1.1" fill="#f2a81d" />
+      <rect x="14.5" y="4.2" width="5.5" height="7" rx="1.5" fill="#fff" stroke="#b9b9b9" strokeWidth="0.6" />
+      <rect x="14.5" y="1.8" width="5.5" height="2.8" rx="1" fill="#8f99a3" />
+      <circle cx="16" cy="3.2" r="0.4" fill="#fff" />
+      <circle cx="17.25" cy="3.2" r="0.4" fill="#fff" />
+      <circle cx="18.5" cy="3.2" r="0.4" fill="#fff" />
+      <rect x="7" y="9.8" width="0.9" height="0.9" fill="#fff" />
+      <rect x="9.2" y="10.6" width="0.9" height="0.9" fill="#fff" />
+      <rect x="11" y="9.6" width="0.9" height="0.9" fill="#fff" />
     </>
   ),
   // 箸で持ち上げた麺
@@ -52,8 +59,15 @@ const TOPPINGS = {
       <path d="M10 4 Q9 7 11 10 M11.5 4 Q10.5 7 12.5 10 M13 4.3 Q12 7 14 10" fill="none" stroke="#f0cd78" strokeWidth="0.9" />
     </>
   ),
-  // 湯気
-  その他: <path d="M9 9 Q8 6.5 9.5 5 T9 1.5 M14 9 Q13 6.5 14.5 5 T14 1.5" fill="none" stroke="#b5b5b5" strokeWidth="0.9" />,
+  // 油そば（スープなしの麺に、卵黄とねぎ）
+  その他: (
+    <>
+      <path d="M4 11 q1.5 -1.6 3 0 t3 0 t3 0 t3 0 t3 0" fill="none" stroke="#b9842a" strokeWidth="0.8" />
+      <circle cx="13" cy="9.8" r="1.8" fill="#f4a300" stroke="#fff3c4" strokeWidth="0.5" />
+      <rect x="7" y="9.4" width="1.4" height="0.8" fill="#4caf50" />
+      <rect x="16.5" y="9.8" width="1.4" height="0.8" fill="#4caf50" />
+    </>
+  ),
 };
 
 export default function RamenMark({ genre, size = 18 }) {

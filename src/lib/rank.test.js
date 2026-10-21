@@ -74,11 +74,17 @@ describe("toppingStage / toppingLabel", () => {
     expect(toppingStage(50)).toBe(4);
   });
 
-  it("二郎系だけ段階の名前が付く", () => {
+  it("種類ごとに段階の名前が付く。段階0は名前なし", () => {
     expect(toppingLabel("二郎系", 3)).toBe("");
     expect(toppingLabel("二郎系", 7)).toBe("野菜マシ");
     expect(toppingLabel("二郎系", 20)).toBe("全マシマシ");
-    expect(toppingLabel("醤油", 20)).toBe("");
+    expect(toppingLabel("家系", 5)).toBe("海苔マシ");
+    expect(toppingLabel("味噌", 12)).toBe("コーンバター");
+    expect(toppingLabel("醤油", 20)).toBe("特製");
+  });
+
+  it("知らない種類なら名前なし", () => {
+    expect(toppingLabel("担々麺", 20)).toBe("");
   });
 });
 

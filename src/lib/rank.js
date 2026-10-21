@@ -35,25 +35,29 @@ const GENRE_FANS = {
   その他: "麺好き",
 };
 
-// マークの盛りの段階。その種類の投稿数が min 以上なら使う（上から順に見る）。
-// 今は二郎系だけが段階で見た目が変わる（野菜マシ → 背脂マシ → 豚マシ → 全マシマシ）
-const TOPPING_STAGES = [
-  { min: 20, stage: 4, label: "全マシマシ" },
-  { min: 15, stage: 3, label: "豚マシ" },
-  { min: 10, stage: 2, label: "背脂マシ" },
-  { min: 5, stage: 1, label: "野菜マシ" },
-  { min: 0, stage: 0, label: "" },
-];
+// マークの盛りの段階。その種類の投稿数が 5・10・15・20 件に届くたびに 1 段階上がる（0〜4）
+const TOPPING_STAGE_MINS = [20, 15, 10, 5];
+
+// 段階ごとの名前。0 段階目は名前なし
+const TOPPING_LABELS = {
+  家系: ["", "海苔マシ", "ほうれん草マシ", "ライス付き", "海苔タワー"],
+  二郎系: ["", "野菜マシ", "背脂マシ", "豚マシ", "全マシマシ"],
+  醤油: ["", "なると", "メンマ", "チャーシュー", "特製"],
+  味噌: ["", "コーン", "コーンバター", "もやしマシ", "北海道スペシャル"],
+  塩: ["", "レモン", "白髪ねぎ", "鶏チャーシュー", "黄金スープ"],
+  つけ麺: ["", "麺大盛り", "魚粉", "味玉", "特盛"],
+  その他: ["", "ねぎ多め", "ラー油", "お酢", "全部のせ"],
+};
 
 /** その種類の投稿数から、マークの盛りの段階（0〜4）を出す */
 export function toppingStage(genreCount) {
-  return TOPPING_STAGES.find((t) => genreCount >= t.min).stage;
+  const index = TOPPING_STAGE_MINS.findIndex((min) => genreCount >= min);
+  return index === -1 ? 0 : TOPPING_STAGE_MINS.length - index;
 }
 
-/** 盛りの段階の名前（例：野菜マシ）。見た目が変わらない種類や段階0なら空文字 */
+/** 盛りの段階の名前（例：野菜マシ）。段階0や知らない種類なら空文字 */
 export function toppingLabel(genre, genreCount) {
-  if (genre !== "二郎系") return "";
-  return TOPPING_STAGES.find((t) => genreCount >= t.min).label;
+  return TOPPING_LABELS[genre]?.[toppingStage(genreCount)] ?? "";
 }
 
 /** レベルと種類から称号を作る（例：見習いジロリアン）。レベル0なら null */

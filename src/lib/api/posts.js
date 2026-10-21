@@ -34,7 +34,7 @@ export async function fetchStationCounts() {
 }
 
 /**
- * ランクとラーメンマークを出すため、全員分の「ユーザーID → 種類ごとの件数」を取得する。
+ * レベルとラーメンマークを出すため、全員分の「ユーザーID → 種類ごとの件数」を取得する。
  * 駅ごとの件数と同じく、必要な列だけをまとめて取得して手元で数える。
  */
 export async function fetchUserGenreCounts() {

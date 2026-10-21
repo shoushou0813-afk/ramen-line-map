@@ -1,26 +1,49 @@
 import { describe, it, expect } from "vitest";
-import { genreCountsByUser, postsToNextRank, rankFromCount, topGenre, userRank } from "./rank.js";
+import {
+  genreCountsByUser,
+  hideRanks,
+  levelFromCount,
+  postsToNextLevel,
+  titleFor,
+  topGenre,
+  userRank,
+} from "./rank.js";
 
-describe("rankFromCount", () => {
-  it("投稿0件はランク5から始まる", () => {
-    expect(rankFromCount(0)).toBe(5);
+describe("levelFromCount", () => {
+  it("投稿0件は Lv.0 から始まる", () => {
+    expect(levelFromCount(0)).toBe(0);
   });
 
-  it("1件投稿するごとに1上がる", () => {
-    expect(rankFromCount(1)).toBe(6);
-    expect(rankFromCount(10)).toBe(15);
+  it("1件目でレベル1になり、1件ごとに1上がる", () => {
+    expect(levelFromCount(1)).toBe(1);
+    expect(levelFromCount(12)).toBe(12);
   });
 
   it("20で頭打ちになる", () => {
-    expect(rankFromCount(15)).toBe(20);
-    expect(rankFromCount(100)).toBe(20);
+    expect(levelFromCount(20)).toBe(20);
+    expect(levelFromCount(100)).toBe(20);
   });
 });
 
-describe("postsToNextRank", () => {
-  it("最高ランクなら0、そうでなければ1", () => {
-    expect(postsToNextRank(3)).toBe(1);
-    expect(postsToNextRank(15)).toBe(0);
+describe("postsToNextLevel", () => {
+  it("最高レベルなら0、そうでなければ1", () => {
+    expect(postsToNextLevel(0)).toBe(1);
+    expect(postsToNextLevel(20)).toBe(0);
+  });
+});
+
+describe("titleFor", () => {
+  it("レベル帯と種類で称号が決まる", () => {
+    expect(titleFor(1, "二郎系")).toBe("見習いジロリアン");
+    expect(titleFor(4, "二郎系")).toBe("見習いジロリアン");
+    expect(titleFor(5, "醤油")).toBe("一人前醤油党");
+    expect(titleFor(10, "家系")).toBe("熟練家系ラバー");
+    expect(titleFor(15, "つけ麺")).toBe("達人つけ麺党");
+    expect(titleFor(20, "二郎系")).toBe("カリスマジロリアン");
+  });
+
+  it("レベル0なら称号なし", () => {
+    expect(titleFor(0, null)).toBe(null);
   });
 });
 
@@ -50,12 +73,29 @@ describe("genreCountsByUser / userRank", () => {
     expect(genreCountsByUser(rows)).toEqual({ u1: { 醤油: 2, 塩: 1 }, u2: { つけ麺: 1 } });
   });
 
-  it("件数・ランク・マークの種類をまとめて返す", () => {
+  it("件数・レベル・称号・マークの種類をまとめて返す", () => {
     const { u1 } = genreCountsByUser(rows);
-    expect(userRank(u1)).toMatchObject({ count: 3, rank: 8, genre: "醤油" });
+    expect(userRank(u1)).toMatchObject({ count: 3, level: 3, genre: "醤油", title: "見習い醤油党" });
   });
 
-  it("まだ投稿していない人はランク5・マークなし", () => {
-    expect(userRank(undefined)).toMatchObject({ count: 0, rank: 5, genre: null });
+  it("まだ投稿していない人は Lv.0・マークなし・称号なし", () => {
+    expect(userRank(undefined)).toMatchObject({ count: 0, level: 0, genre: null, title: null });
+  });
+});
+
+describe("hideRanks", () => {
+  const counts = { u1: { 醤油: 2 }, u2: { 塩: 1 } };
+
+  it("非公開の人だけ null にする", () => {
+    expect(hideRanks(counts, new Set(["u1"]))).toEqual({ u1: null, u2: { 塩: 1 } });
+  });
+
+  it("まだ投稿していない人が非公開にしても null になる", () => {
+    expect(hideRanks(counts, new Set(["u3"])).u3).toBe(null);
+  });
+
+  it("元の対応表は変えない", () => {
+    hideRanks(counts, new Set(["u1"]));
+    expect(counts.u1).toEqual({ 醤油: 2 });
   });
 });

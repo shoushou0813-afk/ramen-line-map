@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "./lib/supabase";
 import { fetchPostsByStation, fetchStationCounts, fetchUserGenreCounts } from "./lib/api/posts";
+import { fetchHiddenRankUserIds } from "./lib/api/rankSettings";
+import { hideRanks } from "./lib/rank";
 import { LINES, LINE_ORDER } from "./data/lines";
 import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
@@ -24,6 +26,7 @@ export default function App() {
   const [counts, setCounts] = useState({});
   const [posts, setPosts] = useState([]);
   const [userGenreCounts, setUserGenreCounts] = useState({});
+  const [hiddenRankUserIds, setHiddenRankUserIds] = useState(() => new Set());
   const [countsError, setCountsError] = useState("");
   const [postsError, setPostsError] = useState("");
 
@@ -48,11 +51,21 @@ export default function App() {
     }
   }, []);
 
-  // --- ランクとラーメンマーク用の、ユーザーごとの種類別件数 ---------------
-  // 読めなくても投稿は見られるので、エラーは画面に出さずマークなし（ランク5）のままにする
+  // --- レベルとラーメンマーク用の、ユーザーごとの種類別件数 -------------
+  // 読めなくても投稿は見られるので、エラーは画面に出さずマークなしのままにする
   const loadUserGenreCounts = useCallback(async () => {
     try {
       setUserGenreCounts(await fetchUserGenreCounts());
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  // --- レベルを非公開にしている人 -----------------------------------
+  // 読めなくても困らないので、エラーは画面に出さず全員公開として扱う
+  const loadHiddenRankUserIds = useCallback(async () => {
+    try {
+      setHiddenRankUserIds(await fetchHiddenRankUserIds());
     } catch (error) {
       console.error(error);
     }
@@ -78,10 +91,14 @@ export default function App() {
   }, [loadUserGenreCounts]);
 
   useEffect(() => {
+    loadHiddenRankUserIds();
+  }, [loadHiddenRankUserIds]);
+
+  useEffect(() => {
     loadPosts();
   }, [loadPosts]);
 
-  // 投稿・削除の後は件数・ランク・一覧をすべて取り直す
+  // 投稿・削除の後は件数・レベル・一覧をすべて取り直す
   const refresh = useCallback(() => {
     loadCounts();
     loadUserGenreCounts();
@@ -101,6 +118,8 @@ export default function App() {
   }
 
   const line = LINES[lineId];
+  // 投稿一覧など、ほかの人も見る場所ではこちらを使う（非公開の人のレベルは出さない）
+  const visibleGenreCounts = hideRanks(userGenreCounts, hiddenRankUserIds);
 
   return (
     <div className="page">
@@ -134,7 +153,7 @@ export default function App() {
 
         <div className="auth">
           {session ? (
-            <NameEditor user={session.user} badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} />}>
+            <NameEditor user={session.user} badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} showTitle={false} />}>
               <button className="tab" onClick={signOut}>
                 ログアウト
               </button>
@@ -161,7 +180,7 @@ export default function App() {
             stationId={stationId}
             posts={posts}
             session={session}
-            userGenreCounts={userGenreCounts}
+            userGenreCounts={visibleGenreCounts}
             onChanged={refresh}
           />
         </>
@@ -170,7 +189,7 @@ export default function App() {
       {mode === "reel" && (
         <section className="card">
           <h2 className="card-title">リール</h2>
-          <Reel userGenreCounts={userGenreCounts} />
+          <Reel userGenreCounts={visibleGenreCounts} />
         </section>
       )}
 
@@ -178,9 +197,16 @@ export default function App() {
         <section className="card">
           <h2 className="card-title">マイアカウント</h2>
           {session ? (
-            <MyPage session={session} userGenreCounts={userGenreCounts} onChanged={refresh} />
+            <MyPage
+              session={session}
+              userGenreCounts={userGenreCounts}
+              visibleGenreCounts={visibleGenreCounts}
+              rankHidden={hiddenRankUserIds.has(session.user.id)}
+              onChanged={refresh}
+              onRankHiddenChanged={loadHiddenRankUserIds}
+            />
           ) : (
-            <p className="empty">ログインすると、自分のランクと投稿の一覧を見られます。</p>
+            <p className="empty">ログインすると、自分のレベル・称号と投稿の一覧を見られます。</p>
           )}
         </section>
       )}

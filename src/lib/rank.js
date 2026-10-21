@@ -1,11 +1,11 @@
 import { GENRES } from "../data/lines";
 
 // 投稿数から決まるレベルと称号、名前の横に出すラーメンマークの種類を計算する。
-// レベルは1件目の投稿で 1 になり、1件投稿するごとに 1 上がる。20 で頭打ち。投稿0件の人はレベルなし（0）。
+// レベルは投稿0件の 0 から始まり、1件投稿するごとに 1 上がる。20 で頭打ち。Lv.0 の人には称号がない。
 
 export const MAX_LEVEL = 20;
 
-/** 投稿数からレベルを出す。投稿0件なら 0 */
+/** 投稿数からレベルを出す */
 export function levelFromCount(count) {
   return Math.min(MAX_LEVEL, count);
 }
@@ -55,7 +55,7 @@ export function topGenre(genreCounts) {
   return best;
 }
 
-/** ユーザー1人分のレベル情報。投稿がまだない人はレベル0・マークなし・称号なしになる */
+/** ユーザー1人分のレベル情報。投稿がまだない人は Lv.0・空の丼・称号なしになる */
 export function userRank(genreCounts = {}) {
   const count = Object.values(genreCounts).reduce((sum, n) => sum + n, 0);
   const level = levelFromCount(count);

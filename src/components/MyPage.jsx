@@ -70,19 +70,13 @@ export default function MyPage({
         <RankBadge genreCounts={genreCounts} size={40} showTitle={false} />
         <div>
           <div className="mypage-name">{displayName(session.user)}</div>
-          {level === 0 ? (
-            <div className="mypage-title">ラーメンを投稿しよう！</div>
-          ) : (
-            <>
-              <div className="mypage-title">{title}</div>
-              <div className="mypage-rank">
-                Lv.{level} / {MAX_LEVEL} ・ 投稿 {count} 件
-              </div>
-              <div className="mypage-next">
-                {nextIn === 0 ? "最高レベルです" : `あと ${nextIn} 件投稿で Lv.${level + 1}`}
-              </div>
-            </>
-          )}
+          <div className="mypage-title">{title ?? "ラーメンを投稿しよう！"}</div>
+          <div className="mypage-rank">
+            Lv.{level} / {MAX_LEVEL} ・ 投稿 {count} 件
+          </div>
+          <div className="mypage-next">
+            {nextIn === 0 ? "最高レベルです" : `あと ${nextIn} 件投稿で Lv.${level + 1}`}
+          </div>
         </div>
       </div>
 

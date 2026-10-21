@@ -10,7 +10,7 @@ import {
 } from "./rank.js";
 
 describe("levelFromCount", () => {
-  it("投稿0件はレベル0（レベルなし）", () => {
+  it("投稿0件は Lv.0 から始まる", () => {
     expect(levelFromCount(0)).toBe(0);
   });
 
@@ -78,7 +78,7 @@ describe("genreCountsByUser / userRank", () => {
     expect(userRank(u1)).toMatchObject({ count: 3, level: 3, genre: "醤油", title: "見習い醤油党" });
   });
 
-  it("まだ投稿していない人はレベル0・マークなし・称号なし", () => {
+  it("まだ投稿していない人は Lv.0・マークなし・称号なし", () => {
     expect(userRank(undefined)).toMatchObject({ count: 0, level: 0, genre: null, title: null });
   });
 });

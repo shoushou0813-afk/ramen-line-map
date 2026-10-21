@@ -134,15 +134,13 @@ export default function App() {
 
         <div className="auth">
           {session ? (
-            <>
-              <RankBadge genreCounts={userGenreCounts[session.user.id]} />
-              <NameEditor user={session.user} />
-              <button className="button" onClick={signOut}>
+            <NameEditor user={session.user} badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} />}>
+              <button className="tab" onClick={signOut}>
                 ログアウト
               </button>
-            </>
+            </NameEditor>
           ) : (
-            <button className="button" onClick={signIn}>
+            <button className="tab" onClick={signIn}>
               Googleでログイン
             </button>
           )}

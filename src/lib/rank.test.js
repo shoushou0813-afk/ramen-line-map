@@ -5,6 +5,8 @@ import {
   levelFromCount,
   postsToNextLevel,
   titleFor,
+  toppingLabel,
+  toppingStage,
   topGenre,
   userRank,
 } from "./rank.js";
@@ -61,6 +63,31 @@ describe("topGenre", () => {
   });
 });
 
+describe("toppingStage / toppingLabel", () => {
+  it("その種類の投稿数で盛りの段階が上がる", () => {
+    expect(toppingStage(1)).toBe(0);
+    expect(toppingStage(4)).toBe(0);
+    expect(toppingStage(5)).toBe(1);
+    expect(toppingStage(10)).toBe(2);
+    expect(toppingStage(15)).toBe(3);
+    expect(toppingStage(20)).toBe(4);
+    expect(toppingStage(50)).toBe(4);
+  });
+
+  it("種類ごとに段階の名前が付く。段階0は名前なし", () => {
+    expect(toppingLabel("二郎系", 3)).toBe("");
+    expect(toppingLabel("二郎系", 7)).toBe("野菜マシ");
+    expect(toppingLabel("二郎系", 20)).toBe("全マシマシ");
+    expect(toppingLabel("家系", 5)).toBe("海苔マシ");
+    expect(toppingLabel("味噌", 12)).toBe("コーンバター");
+    expect(toppingLabel("醤油", 20)).toBe("特製");
+  });
+
+  it("知らない種類なら名前なし", () => {
+    expect(toppingLabel("担々麺", 20)).toBe("");
+  });
+});
+
 describe("genreCountsByUser / userRank", () => {
   const rows = [
     { user_id: "u1", genre: "醤油" },
@@ -75,7 +102,11 @@ describe("genreCountsByUser / userRank", () => {
 
   it("件数・レベル・称号・マークの種類をまとめて返す", () => {
     const { u1 } = genreCountsByUser(rows);
-    expect(userRank(u1)).toMatchObject({ count: 3, level: 3, genre: "醤油", title: "見習い醤油党" });
+    expect(userRank(u1)).toMatchObject({ count: 3, level: 3, genre: "醤油", stage: 0, title: "見習い醤油党" });
+  });
+
+  it("盛りの段階は合計ではなく、一番多い種類の投稿数で決まる", () => {
+    expect(userRank({ 二郎系: 6, 醤油: 5 })).toMatchObject({ genre: "二郎系", stage: 1 });
   });
 
   it("まだ投稿していない人は Lv.0・マークなし・称号なし", () => {

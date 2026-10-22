@@ -3,7 +3,7 @@ import { fetchPostsByUser } from "../lib/api/posts";
 import { updateRankHidden } from "../lib/api/rankSettings";
 import { displayName } from "../lib/api/profile";
 import { GENRES } from "../data/lines";
-import { MAX_LEVEL, postsToNextLevel, userRank } from "../lib/rank";
+import { MAX_LEVEL, postsToNextLevel, toppingLabel, toppingStage, userRank } from "../lib/rank";
 import PostList from "./PostList";
 import RamenMark from "./RamenMark";
 import RankBadge from "./RankBadge";
@@ -95,8 +95,8 @@ export default function MyPage({
         <ul className="genre-counts">
           {GENRES.filter((g) => genreCounts[g]).map((g) => (
             <li key={g} className="genre-count">
-              <RamenMark genre={g} />
-              {g} {genreCounts[g]}件
+              <RamenMark genre={g} stage={toppingStage(genreCounts[g])} />
+              {g} {genreCounts[g]}件{toppingLabel(g, genreCounts[g]) && `（${toppingLabel(g, genreCounts[g])}）`}
             </li>
           ))}
         </ul>

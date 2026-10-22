@@ -7,12 +7,12 @@ import RamenMark from "./RamenMark";
 // showTitle を false にすると称号を省く（ヘッダーなど狭い場所用）
 export default function RankBadge({ genreCounts, size, showTitle = true }) {
   if (genreCounts === null) return null;
-  const { level, genre, title } = userRank(genreCounts);
+  const { level, genre, stage, title } = userRank(genreCounts);
 
   const label = title ? `Lv.${level} ${title}` : `Lv.${level}`;
   return (
     <span className="rank-badge" title={label} aria-label={label}>
-      <RamenMark genre={genre} size={size} />
+      <RamenMark genre={genre} size={size} stage={stage} />
       <span className="rank-number">Lv.{level}</span>
       {showTitle && title && <span className="rank-title">{title}</span>}
     </span>

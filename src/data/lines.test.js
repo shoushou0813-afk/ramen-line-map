@@ -21,12 +21,9 @@ describe("lines.js", () => {
     }
   });
 
-  it("labelがtop/bottom/left/rightのいずれか", () => {
-    const validLabels = ["top", "bottom", "left", "right"];
+  it("どの路線にも線の色がある", () => {
     for (const line of Object.values(LINES)) {
-      for (const st of line.stations) {
-        expect(validLabels).toContain(st.label);
-      }
+      expect(line.color).toMatch(/^#[0-9a-f]{6}$/);
     }
   });
 

@@ -58,7 +58,8 @@ export default function LineMap({ line, counts, selectedId, onSelect }) {
   return (
     <>
       <div className="map-frame">
-        <svg viewBox={paddedViewBox(line.viewBox)} className="map-svg" role="img" aria-label={`${line.name}の路線図`}>
+        {/* role="img" にすると中の駅のボタンが読み上げソフトから見えなくなるので、group にしている */}
+        <svg viewBox={paddedViewBox(line.viewBox)} className="map-svg" role="group" aria-label={`${line.name}の路線図`}>
           {segments.map((seg) => (
             <polyline key={`${seg.key}-edge`} points={seg.points} className="map-line-edge" strokeWidth={LINE_EDGE_WIDTH * unit} />
           ))}
@@ -79,7 +80,8 @@ export default function LineMap({ line, counts, selectedId, onSelect }) {
                 onClick={() => onSelect(st.id)}
                 tabIndex={0}
                 role="button"
-                aria-label={`${st.name}駅 ${count}件`}
+                aria-label={`${st.name}駅 記録${count}件`}
+                aria-pressed={selected}
                 // キーボードでも選べるようにしておく
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -88,7 +90,7 @@ export default function LineMap({ line, counts, selectedId, onSelect }) {
                   }
                 }}
               >
-                <circle cx={st.x} cy={st.y} r={HIT_RADIUS * unit} className="map-hit" />
+                <circle cx={st.x} cy={st.y} r={HIT_RADIUS * unit} className="map-hit" strokeWidth={2 * unit} />
                 {selected && <circle cx={st.x} cy={st.y} r={r + 5 * unit} className="map-halo" strokeWidth={3 * unit} />}
                 <circle
                   cx={st.x}
@@ -119,12 +121,14 @@ export default function LineMap({ line, counts, selectedId, onSelect }) {
         </svg>
       </div>
 
+      <p className="map-hint">駅の丸をタップすると、下にその駅の記録が出ます</p>
+
       <div className="map-legend">
         <span className="map-legend-item">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
             <circle cx="9" cy="9" r="7.5" className="map-circle" strokeWidth="2" />
           </svg>
-          記録あり（数字＝件数）
+          数字は記録の数
         </span>
         <span className="map-legend-item">
           <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
@@ -133,6 +137,19 @@ export default function LineMap({ line, counts, selectedId, onSelect }) {
           まだ記録なし
         </span>
       </div>
+
+      {/* 路線図が見づらい人・読み上げソフトを使う人向けに、ふつうの選択欄でも駅を選べるようにする */}
+      <label className="map-select">
+        一覧から駅を選ぶ
+        <select className="input" value={selectedId} onChange={(e) => onSelect(e.target.value)}>
+          {!line.stations.some((st) => st.id === selectedId) && <option value={selectedId}>選んでください</option>}
+          {line.stations.map((st) => (
+            <option key={st.id} value={st.id}>
+              {st.name}（記録{counts[st.id] ?? 0}件）
+            </option>
+          ))}
+        </select>
+      </label>
 
       {ranking.length > 0 && (
         <div className="map-ranking">

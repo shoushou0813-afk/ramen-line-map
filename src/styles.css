@@ -175,10 +175,17 @@ body {
   display: block;
 }
 
+/* 線の下に敷く縁。黄色など背景に溶ける色でも線が見えるようにする（太さは LineMap.jsx で決める） */
+.map-line-edge {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 色は路線ごと（lines.js の color）。太さは LineMap.jsx で決める */
 .map-line {
   fill: none;
-  stroke: var(--line);
-  stroke-width: 5;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -191,34 +198,130 @@ body {
   outline: none;
 }
 
-.map-station:focus-visible .map-circle {
+/* キーボードで選んでいる駅が分かるよう、押せる範囲のまわりに青い枠を出す */
+.map-station:focus-visible .map-hit {
   stroke: var(--link);
-  stroke-width: 4;
+}
+
+/* 指で押せる範囲。見えないが、小さな点の駅でも押しやすくする */
+.map-hit {
+  fill: transparent;
+  stroke: none;
 }
 
 .map-circle {
   fill: #fff;
   stroke: var(--line);
-  stroke-width: 3;
+}
+
+/* 記録がない駅は灰色の小さな点にして、記録がある駅を目立たせる */
+.map-circle.is-empty {
+  stroke: #8a8a8a;
 }
 
 .map-circle.is-selected {
   fill: var(--accent);
+  stroke: var(--line);
+}
+
+.map-halo {
+  fill: none;
+  stroke: var(--accent);
+  opacity: 0.35;
 }
 
 .map-count {
-  font-size: 15px;
+  font-weight: 700;
   fill: #111;
 }
 
 .map-count.is-selected {
   fill: #fff;
-  font-weight: 700;
 }
 
 .map-name {
-  font-size: 14px;
+  font-weight: 700;
   fill: #111;
+}
+
+.map-name.is-empty {
+  font-weight: 400;
+  fill: #6b6b6b;
+}
+
+.map-hint {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin-top: 6px;
+  font-size: 14px;
+  color: #555;
+}
+
+.map-select {
+  display: block;
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
+}
+
+.map-select .input {
+  display: block;
+  margin: 6px 0 0;
+  min-height: 46px;
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.map-ranking {
+  margin-top: 14px;
+}
+
+.map-ranking-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.map-ranking-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.map-ranking-chip {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.map-ranking-chip b {
+  color: var(--accent);
+}
+
+.map-ranking-chip.is-active {
+  border-color: var(--accent);
+  background: #fdeee9;
 }
 
 /* --- フォーム --- */
@@ -262,8 +365,19 @@ body {
   color: var(--muted);
 }
 
+/* iPhone の Safari は日付欄の幅を独自に決めてカードからはみ出すので、見た目の指定を外して幅を 100% に収める */
 .date-field .input {
+  display: block;
   margin-top: 4px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 46px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.date-field .input::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 .error {

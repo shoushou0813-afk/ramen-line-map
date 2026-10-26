@@ -10,8 +10,8 @@ export const PHONE_MAP_WIDTH = 340;
 // 路線図のまわりに足す余白（px）。端の駅の駅名や大きい丸がはみ出さないようにする
 export const MAP_PADDING = 8;
 
-// 駅名と件数の文字の大きさ（px）
-export const NAME_PX = 12;
+// 駅名と件数の文字の大きさ（px）。駅の間隔が一番狭い総武線（約 50px）で隣の駅名と重ならない最大の大きさ
+export const NAME_PX = 13;
 
 // 記録が多い駅のボタンをいくつまで出すか
 export const TOP_STATIONS_LIMIT = 6;

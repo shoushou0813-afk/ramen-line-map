@@ -115,10 +115,17 @@ export default function App() {
     setRenameCount((n) => n + 1);
   }, [loadPosts]);
 
-  // 駅を押したら、路線図の下にあるその駅の記録まで自動で下がる（スマホだと路線図だけで画面が埋まるため）
+  // 駅を押したら、その駅の記録が画面の下半分に見えるところまで少しだけ下がる。
+  // 一番上まで下げると路線図が隠れてほかの駅を押せなくなるので、上半分には路線図を残す
   function selectStation(id) {
     setStationId(id);
-    stationPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const panel = stationPanelRef.current;
+    if (!panel) return;
+    const panelTop = panel.getBoundingClientRect().top;
+    const half = window.innerHeight / 2;
+    // 記録の見出しがすでに画面の上から4分の3までに見えているなら動かさない
+    if (panelTop <= window.innerHeight * 0.75) return;
+    window.scrollTo({ top: window.scrollY + panelTop - half, behavior: "smooth" });
   }
 
   async function signIn() {

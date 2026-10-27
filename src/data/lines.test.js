@@ -21,6 +21,15 @@ describe("lines.js", () => {
     }
   });
 
+  it("labelがtop/bottom/left/rightのいずれか", () => {
+    const validLabels = ["top", "bottom", "left", "right"];
+    for (const line of Object.values(LINES)) {
+      for (const st of line.stations) {
+        expect(validLabels).toContain(st.label);
+      }
+    }
+  });
+
   it("stationNameは既存IDなら駅名を返し、未知のIDならそのまま返す", () => {
     expect(stationName("shibuya")).toBe("渋谷");
     expect(stationName("mitaka")).toBe("三鷹");

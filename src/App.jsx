@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
 import { fetchPostsByStation, fetchStationCounts, fetchUserGenreCounts } from "./lib/api/posts";
 import { fetchHiddenRankUserIds } from "./lib/api/rankSettings";
@@ -31,6 +31,8 @@ export default function App() {
   const [postsError, setPostsError] = useState("");
   // 表示名を変えたら増やす。リールとマイアカウントの key に使い、作り直して投稿を読み直させる
   const [renameCount, setRenameCount] = useState(0);
+  // 駅を選んだら、その駅の記録までスクロールするために使う
+  const stationPanelRef = useRef(null);
 
   // --- ログイン状態 ---------------------------------------------------
   useEffect(() => {
@@ -113,6 +115,12 @@ export default function App() {
     setRenameCount((n) => n + 1);
   }, [loadPosts]);
 
+  // 駅を押したら、路線図の下にあるその駅の記録まで自動で下がる（スマホだと路線図だけで画面が埋まるため）
+  function selectStation(id) {
+    setStationId(id);
+    stationPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   async function signIn() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -185,16 +193,18 @@ export default function App() {
         <>
           <section className="card">
             <h2 className="card-title">路線図</h2>
-            <LineMap line={line} counts={counts} selectedId={stationId} onSelect={setStationId} />
+            <LineMap line={line} counts={counts} selectedId={stationId} onSelect={selectStation} />
           </section>
 
-          <StationPanel
-            stationId={stationId}
-            posts={posts}
-            session={session}
-            userGenreCounts={visibleGenreCounts}
-            onChanged={refresh}
-          />
+          <div ref={stationPanelRef}>
+            <StationPanel
+              stationId={stationId}
+              posts={posts}
+              session={session}
+              userGenreCounts={visibleGenreCounts}
+              onChanged={refresh}
+            />
+          </div>
         </>
       )}
 

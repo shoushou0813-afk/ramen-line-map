@@ -31,8 +31,8 @@ export default function App() {
   const [postsError, setPostsError] = useState("");
   // 表示名を変えたら増やす。リールとマイアカウントの key に使い、作り直して投稿を読み直させる
   const [renameCount, setRenameCount] = useState(0);
-  // 駅を選んだら、その駅の記録までスクロールするために使う
-  const stationPanelRef = useRef(null);
+  // 駅を選んだら、路線図が画面の一番上に来るまでスクロールするために使う
+  const mapRef = useRef(null);
 
   // --- ログイン状態 ---------------------------------------------------
   useEffect(() => {
@@ -115,17 +115,13 @@ export default function App() {
     setRenameCount((n) => n + 1);
   }, [loadPosts]);
 
-  // 駅を押したら、その駅の記録が画面の下半分に見えるところまで少しだけ下がる。
-  // 一番上まで下げると路線図が隠れてほかの駅を押せなくなるので、上半分には路線図を残す
+  // 駅を押したら、路線図の上端が画面の一番上に来るまで下げる。
+  // 路線図は全部見えたまま押せて、空いた下の部分にその駅の記録が出る
   function selectStation(id) {
     setStationId(id);
-    const panel = stationPanelRef.current;
-    if (!panel) return;
-    const panelTop = panel.getBoundingClientRect().top;
-    const half = window.innerHeight / 2;
-    // 記録の見出しがすでに画面の上から4分の3までに見えているなら動かさない
-    if (panelTop <= window.innerHeight * 0.75) return;
-    window.scrollTo({ top: window.scrollY + panelTop - half, behavior: "smooth" });
+    const map = mapRef.current;
+    if (!map) return;
+    window.scrollTo({ top: window.scrollY + map.getBoundingClientRect().top - 8, behavior: "smooth" });
   }
 
   async function signIn() {
@@ -200,18 +196,18 @@ export default function App() {
         <>
           <section className="card">
             <h2 className="card-title">路線図</h2>
-            <LineMap line={line} counts={counts} selectedId={stationId} onSelect={selectStation} />
+            <div ref={mapRef}>
+              <LineMap line={line} counts={counts} selectedId={stationId} onSelect={selectStation} />
+            </div>
           </section>
 
-          <div ref={stationPanelRef}>
-            <StationPanel
-              stationId={stationId}
-              posts={posts}
-              session={session}
-              userGenreCounts={visibleGenreCounts}
-              onChanged={refresh}
-            />
-          </div>
+          <StationPanel
+            stationId={stationId}
+            posts={posts}
+            session={session}
+            userGenreCounts={visibleGenreCounts}
+            onChanged={refresh}
+          />
         </>
       )}
 

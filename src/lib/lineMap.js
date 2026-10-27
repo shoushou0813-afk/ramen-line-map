@@ -33,11 +33,10 @@ export function paddedViewBox(viewBox) {
 }
 
 /**
- * 駅の丸の半径（px）。記録がない駅は小さな点にして、記録がある駅は件数が多いほど大きくする。
- * 選んでいる駅は、記録がなくても数字が入る大きさにする
+ * 駅の丸の半径（px）。記録がある駅は件数が多いほど大きくする。
+ * 記録がない駅も、記録 1 件の駅と同じ大きさにする。小さな点にすると見づらく、新しく投稿する駅を路線図から選びにくかったため
  */
-export function stationRadius(count, selected = false) {
-  if (count === 0 && !selected) return 5;
+export function stationRadius(count) {
   return Math.min(16, 9 + 1.5 * Math.max(count, 1));
 }
 

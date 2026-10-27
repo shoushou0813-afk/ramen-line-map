@@ -6,7 +6,7 @@
 
 | 名前 | 種類 | 説明 |
 | --- | --- | --- |
-| `LINES` | `export const` (object) | 路線ごとの定義(`id`, `name`, `color`, `viewBox`, `loop`, `stations`)。`color` は線の色。`stations` の各駅は `id`, `name`, `x`, `y`, （必要なら）`corner` を持つ。駅名の位置は `labelSide` で自動で決まる。 |
+| `LINES` | `export const` (object) | 路線ごとの定義(`id`, `name`, `viewBox`, `loop`, `stations`)。`stations` の各駅は `id`, `name`, `x`, `y`, （必要なら）`corner` を持つ。駅名の位置は `labelSide` で自動で決まる。 |
 | `LINE_ORDER` | `export const` (array) | タブなどに表示する路線の順番。`["chuo", "yamanote", "denentoshi", "toyoko", "sobu"]`。オブジェクトのキー順に依存しないよう明示的に定義。 |
 | `STATION_NAMES` | `const` (object, モジュール内限定) | 駅ID→駅名の逆引き辞書。`LINE_ORDER` の順に全路線の駅を走査して構築。複数路線をまたいで同じIDの駅がある場合は最初に見つかった名前を採用。 |
 | `stationName(id)` | `export function` | `STATION_NAMES` から駅名を引く。見つからない場合は `id` をそのまま返す。 |
@@ -21,7 +21,7 @@
 | `PHONE_MAP_WIDTH` / `MAP_PADDING` / `NAME_PX` / `TOP_STATIONS_LIMIT` | `export const` | スマホでの路線図の幅（340）、まわりの余白（8）、駅名と件数の文字の大きさ（12）、記録が多い駅のボタンの数（6）。 |
 | `mapUnit(viewBox)` | `export function` | スマホで 1px にあたる viewBox 上の長さ。 |
 | `paddedViewBox(viewBox)` | `export function` | 上下左右に余白を足した viewBox。端の駅名や大きい丸がはみ出さないようにする。 |
-| `stationRadius(count, selected)` | `export function` | 駅の丸の半径（px）。記録なしは 5 の点、記録ありは件数が多いほど大きく、16 で頭打ち。 |
+| `stationRadius(count)` | `export function` | 駅の丸の半径（px）。記録ありは件数が多いほど大きく、16 で頭打ち。記録なしも記録 1 件と同じ大きさにして、路線図から選びやすくする。 |
 | `labelSide(line, index)` | `export function` | 駅名を置く側。基本は上、上に線が出ている駅は下、上下に線が通る駅は図の外側の横。 |
 | `topStations(line, counts, limit)` | `export function` | その路線で記録が多い駅を多い順に返す。 |
 
@@ -31,7 +31,7 @@
 | --- | --- | --- |
 | `buildSegments(line)` | `function` (モジュール内限定) | 隣り合う駅を結ぶ線分の座標(`points`)を配列で生成。`from.corner` があればそこで折り曲げて斜め線を避ける。`line.loop` が `true` なら最後の駅と最初の駅を結ぶ線分も追加。戻り値は `{ key, points }[]`。 |
 | `labelAttrs(st, side, r, unit)` | `function` (モジュール内限定) | 駅名ラベルの位置を、置く側・丸の半径に応じて計算し、`{ x, y, textAnchor }` を返す。 |
-| `LineMap({ line, counts, selectedId, onSelect })` | `export default function` (React コンポーネント) | 路線図本体。線（縁→路線の色）→ 丸 → 文字の順で描画。記録がない駅は灰色の点で数字を出さない。駅の丸・見えない押せる範囲・Enter/Spaceキーで選択でき、`onSelect(st.id)` を呼ぶ。下に凡例と「記録が多い駅」のボタンを出す。 |
+| `LineMap({ line, counts, selectedId, onSelect })` | `export default function` (React コンポーネント) | 路線図本体。線 → 丸 → 文字の順で描画。記録がない駅は数字の入らない白い丸。駅の丸・見えない押せる範囲・Enter/Spaceキーで選択でき、`onSelect(st.id)` を呼ぶ。下に凡例と「記録が多い駅」のボタンを出す。 |
 
 ## 補足
 

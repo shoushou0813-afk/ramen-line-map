@@ -22,25 +22,46 @@ export function storagePathFromUrl(url) {
   return url.split(`/${IMAGE_BUCKET}/`)[1] ?? null;
 }
 
+// Supabase は1回の問い合わせで最大1000行しか返さず、超えた分はエラーにならずに切り捨てられる
+export const PAGE_SIZE = 1000;
+
+/**
+ * fetchPage(from, to) を繰り返し呼び、全部の行を集めて返す。
+ * 返ってきた行が PAGE_SIZE より少なければ、それが最後のページ。
+ */
+export async function fetchAllPages(fetchPage, pageSize = PAGE_SIZE) {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const page = await fetchPage(from, from + pageSize - 1);
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
+}
+
+/** posts の指定した列を全件取得する。ページの境目で行が重複・欠落しないよう、id 順に固定して分けて取る */
+async function selectAllPosts(columns) {
+  return fetchAllPages(async (from, to) => {
+    const { data, error } = await supabase.from("posts").select(columns).order("id").range(from, to);
+    if (error) throw error;
+    return data ?? [];
+  });
+}
+
 /**
  * 駅ごとの投稿件数を取得する。
  * 駅ごとに問い合わせると駅の数だけ通信が発生するため、station_id だけをまとめて取得して手元で数える。
- * 件数が数万件を超えたら、SQL 側の group by に切り替える。
+ * 1000行ずつ分けて取るので件数が増えても数はずれないが、数万件を超えたら SQL 側の group by に切り替える。
  */
 export async function fetchStationCounts() {
-  const { data, error } = await supabase.from("posts").select("station_id");
-  if (error) throw error;
-  return countByStation(data);
+  return countByStation(await selectAllPosts("station_id"));
 }
 
 /**
  * レベルとラーメンマークを出すため、全員分の「ユーザーID → 種類ごとの件数」を取得する。
- * 駅ごとの件数と同じく、必要な列だけをまとめて取得して手元で数える。
+ * 駅ごとの件数と同じく、必要な列だけを全件取得して手元で数える。
  */
 export async function fetchUserGenreCounts() {
-  const { data, error } = await supabase.from("posts").select("user_id, genre");
-  if (error) throw error;
-  return genreCountsByUser(data);
+  return genreCountsByUser(await selectAllPosts("user_id, genre"));
 }
 
 /** 指定したユーザーの投稿を新しい順に取得する（マイアカウント用） */

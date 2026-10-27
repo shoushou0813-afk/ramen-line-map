@@ -18,17 +18,13 @@ describe("mapUnit / paddedViewBox", () => {
 });
 
 describe("stationRadius", () => {
-  it("記録がない駅は小さな点", () => {
-    expect(stationRadius(0)).toBe(5);
+  it("記録がない駅も、記録 1 件の駅と同じ大きさ（路線図から選びやすくするため）", () => {
+    expect(stationRadius(0)).toBe(stationRadius(1));
   });
 
   it("件数が多いほど大きく、16 で頭打ち", () => {
     expect(stationRadius(1)).toBeLessThan(stationRadius(3));
     expect(stationRadius(100)).toBe(16);
-  });
-
-  it("選んでいる駅は、記録がなくても数字が入る大きさ", () => {
-    expect(stationRadius(0, true)).toBe(stationRadius(1));
   });
 });
 

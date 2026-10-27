@@ -21,12 +21,6 @@ describe("lines.js", () => {
     }
   });
 
-  it("どの路線にも線の色がある", () => {
-    for (const line of Object.values(LINES)) {
-      expect(line.color).toMatch(/^#[0-9a-f]{6}$/);
-    }
-  });
-
   it("stationNameは既存IDなら駅名を返し、未知のIDならそのまま返す", () => {
     expect(stationName("shibuya")).toBe("渋谷");
     expect(stationName("mitaka")).toBe("三鷹");

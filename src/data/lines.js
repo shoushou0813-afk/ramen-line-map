@@ -3,7 +3,6 @@
 //
 // - SVG の座標は左上が原点で、y は下に行くほど増える（数学のグラフと上下が逆）
 // - 駅名を丸のどっち側に置くかは、線の向きから自動で決める（lib/lineMap.js の labelSide）
-// - color は路線の色。路線図の線に使う
 // - corner は次の駅へ行く途中で曲がる点。斜めの線を出したくない所だけ指定する
 //   （曲がる必要が無い＝x か y が揃っている区間は指定しなくていい）
 //  欠点として追加の駅は作成が困難である
@@ -14,7 +13,6 @@ export const LINES = {
   chuo: {
     id: "chuo",
     name: "中央線",
-    color: "#f15a22",
     viewBox: "0 0 600 420",
     loop: false,
     // 3段の蛇行。小金井の方まで入れると1段に収まらないので、田園都市線と同じ形にした。
@@ -39,7 +37,6 @@ export const LINES = {
   yamanote: {
     id: "yamanote",
     name: "山手線",
-    color: "#9acd32",
     viewBox: "0 0 600 400",
     // 環状線なので最後の駅（原宿）と最初の駅（新宿）も結ぶ必要がある
     loop: true,
@@ -63,7 +60,6 @@ export const LINES = {
   denentoshi: {
     id: "denentoshi",
     name: "田園都市線・半蔵門線",
-    color: "#20a288",
     viewBox: "0 0 600 420",
     loop: false,
     // 3段の蛇行。段ごとに進む向きが逆になる
@@ -86,7 +82,6 @@ export const LINES = {
   toyoko: {
     id: "toyoko",
     name: "東横線",
-    color: "#da0442",
     viewBox: "0 0 600 290",
     loop: false,
     stations: [
@@ -105,7 +100,6 @@ export const LINES = {
   sobu: {
     id: "sobu",
     name: "総武線",
-    color: "#ffd400",
     viewBox: "0 0 680 540",
     loop: false,
     // 6駅ごとに折り返す蛇行レイアウト。段の境目は必ず同じxで繋いで縦線にし、斜め線を避けている

@@ -267,8 +267,19 @@ body {
   color: var(--muted);
 }
 
+/* iPhone の Safari は日付欄の幅を独自に決めてカードからはみ出すので、見た目の指定を外して幅を 100% に収める */
 .date-field .input {
+  display: block;
   margin-top: 4px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 46px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.date-field .input::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 .error {

@@ -1,12 +1,8 @@
-import { NAME_PX, labelSide, mapUnit, paddedViewBox, stationRadius, topStations } from "../lib/lineMap";
-
 // 路線図の描画。
 // 描く順番が大事で、線 → 丸 → 文字 の順に書かないと線が丸の上に乗ってしまう
 // （SVG は後に書いたものが手前に来る）。
-// 大きさはすべて「スマホで見たときの px」× unit で viewBox の座標に直して使う（lib/lineMap.js を参照）
 
-const LINE_WIDTH = 4; // 線の太さ（px）
-const HIT_RADIUS = 22; // 指で押せる範囲の半径（px）。駅の丸より広くして押しやすくする
+const R = 20; // 駅の丸の半径
 
 // 隣り合う駅を結ぶ線の座標を作る。
 // corner が指定されていたら、そこで一度折り曲げる（斜め線を出したくないため）
@@ -33,123 +29,72 @@ function buildSegments(line) {
   return segments;
 }
 
-// 駅名の位置。r は丸の半径、unit は 1px にあたる viewBox 上の長さ
-function labelAttrs(st, side, r, unit) {
-  const gap = 6 * unit;
-  switch (side) {
+// 駅名をどこに置くか。丸に重ならない位置にずらす
+function labelAttrs(st) {
+  switch (st.label) {
     case "bottom":
-      return { x: st.x, y: st.y + r + 15 * unit, textAnchor: "middle" };
+      return { x: st.x, y: st.y + R + 20, textAnchor: "middle" };
     case "right":
-      return { x: st.x + r + gap, y: st.y + 4 * unit, textAnchor: "start" };
+      return { x: st.x + R + 12, y: st.y + 5, textAnchor: "start" };
     case "left":
-      return { x: st.x - r - gap, y: st.y + 4 * unit, textAnchor: "end" };
+      return { x: st.x - R - 12, y: st.y + 5, textAnchor: "end" };
     case "top":
     default:
-      return { x: st.x, y: st.y - r - gap, textAnchor: "middle" };
+      return { x: st.x, y: st.y - R - 10, textAnchor: "middle" };
   }
 }
 
 export default function LineMap({ line, counts, selectedId, onSelect }) {
   const segments = buildSegments(line);
-  const unit = mapUnit(line.viewBox);
-  const ranking = topStations(line, counts);
 
   return (
-    <>
-      <div className="map-frame">
-        {/* role="img" にすると中の駅のボタンが読み上げソフトから見えなくなるので、group にしている */}
-        <svg viewBox={paddedViewBox(line.viewBox)} className="map-svg" role="group" aria-label={`${line.name}の路線図`}>
-          {segments.map((seg) => (
-            <polyline key={seg.key} points={seg.points} className="map-line" strokeWidth={LINE_WIDTH * unit} />
-          ))}
+    <div className="map-frame">
+      <svg viewBox={line.viewBox} className="map-svg" role="img" aria-label={`${line.name}の路線図`}>
+        {segments.map((seg) => (
+          <polyline key={seg.key} points={seg.points} className="map-line" />
+        ))}
 
-          {line.stations.map((st, index) => {
-            const count = counts[st.id] ?? 0;
-            const selected = st.id === selectedId;
-            const empty = count === 0;
-            const r = stationRadius(count) * unit;
-            const label = labelAttrs(st, labelSide(line, index), r, unit);
-            return (
-              <g
-                key={st.id}
-                className="map-station"
-                onClick={() => onSelect(st.id)}
-                tabIndex={0}
-                role="button"
-                aria-label={`${st.name}駅 記録${count}件`}
-                aria-pressed={selected}
-                // キーボードでも選べるようにしておく
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onSelect(st.id);
-                  }
-                }}
+        {line.stations.map((st) => {
+          const selected = st.id === selectedId;
+          const label = labelAttrs(st);
+          return (
+            <g
+              key={st.id}
+              className="map-station"
+              onClick={() => onSelect(st.id)}
+              tabIndex={0}
+              role="button"
+              aria-label={`${st.name}駅`}
+              // キーボードでも選べるようにしておく
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelect(st.id);
+                }
+              }}
+            >
+              <circle
+                cx={st.x}
+                cy={st.y}
+                r={R}
+                className={selected ? "map-circle is-selected" : "map-circle"}
+              />
+              <text
+                x={st.x}
+                y={st.y}
+                dy="0.36em"
+                textAnchor="middle"
+                className={selected ? "map-count is-selected" : "map-count"}
               >
-                <circle cx={st.x} cy={st.y} r={HIT_RADIUS * unit} className="map-hit" strokeWidth={2 * unit} />
-                {selected && <circle cx={st.x} cy={st.y} r={r + 5 * unit} className="map-halo" strokeWidth={3 * unit} />}
-                <circle
-                  cx={st.x}
-                  cy={st.y}
-                  r={r}
-                  strokeWidth={2.5 * unit}
-                  className={["map-circle", empty && "is-empty", selected && "is-selected"].filter(Boolean).join(" ")}
-                />
-                {/* 記録がない駅は数字を出さない（選んでいる駅だけは 0 と出す） */}
-                {(!empty || selected) && (
-                  <text
-                    x={st.x}
-                    y={st.y}
-                    dy="0.36em"
-                    textAnchor="middle"
-                    fontSize={NAME_PX * unit}
-                    className={selected ? "map-count is-selected" : "map-count"}
-                  >
-                    {count}
-                  </text>
-                )}
-                <text {...label} fontSize={NAME_PX * unit} className="map-name">
-                  {st.name}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-
-      <p className="map-hint">駅の丸をタップすると、下にその駅の記録が出ます</p>
-
-      <div className="map-legend">
-        <span className="map-legend-item">
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-            <circle cx="9" cy="9" r="7.5" className="map-circle" strokeWidth="2" />
-          </svg>
-          数字は記録の数
-        </span>
-        <span className="map-legend-item">
-          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-            <circle cx="9" cy="9" r="7.5" className="map-circle is-empty" strokeWidth="2" />
-          </svg>
-          まだ記録なし
-        </span>
-      </div>
-
-      {ranking.length > 0 && (
-        <div className="map-ranking">
-          <div className="map-ranking-title">記録が多い駅</div>
-          <div className="map-ranking-list">
-            {ranking.map((st) => (
-              <button
-                key={st.id}
-                className={st.id === selectedId ? "map-ranking-chip is-active" : "map-ranking-chip"}
-                onClick={() => onSelect(st.id)}
-              >
-                {st.name} <b>{st.count}</b>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
+                {counts[st.id] ?? 0}
+              </text>
+              <text {...label} className="map-name">
+                {st.name}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }

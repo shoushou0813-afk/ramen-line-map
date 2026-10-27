@@ -3,6 +3,7 @@ import { deletePost } from "../lib/api/posts";
 import { postDate } from "../lib/date";
 import { stationName } from "../data/lines";
 import { DEFAULT_SORT, sortPosts } from "../lib/sortPosts";
+import PostForm from "./PostForm";
 import SortSelect from "./SortSelect";
 import RankBadge from "./RankBadge";
 import Stars from "./Stars";
@@ -11,6 +12,12 @@ import Stars from "./Stars";
 export default function PostList({ posts, session, userGenreCounts, onChanged, showStation = false }) {
   const [deleteError, setDeleteError] = useState("");
   const [sortId, setSortId] = useState(DEFAULT_SORT);
+  const [editingId, setEditingId] = useState(null); // 編集中の投稿の id。編集フォームは一度に1つだけ開く
+
+  function handleEdited() {
+    setEditingId(null);
+    onChanged();
+  }
 
   async function handleDelete(post) {
     // 本人以外が削除できないことは RLS で保証しているので、ここでは確認だけ取る
@@ -35,7 +42,12 @@ export default function PostList({ posts, session, userGenreCounts, onChanged, s
       {deleteError && <p className="error">{deleteError}</p>}
       <SortSelect value={sortId} onChange={setSortId} />
       <ul className="post-list">
-      {sortPosts(posts, sortId).map((p) => (
+      {sortPosts(posts, sortId).map((p) =>
+        editingId === p.id ? (
+          <li key={p.id} className="post">
+            <PostForm session={session} post={p} onPosted={handleEdited} onCancel={() => setEditingId(null)} />
+          </li>
+        ) : (
         <li key={p.id} className="post">
           {showStation && <div className="reel-station">{stationName(p.station_id)}</div>}
           <div className="post-head">
@@ -51,13 +63,19 @@ export default function PostList({ posts, session, userGenreCounts, onChanged, s
               <RankBadge genreCounts={userGenreCounts[p.user_id]} /> ・ {postDate(p)}
             </span>
             {session?.user?.id === p.user_id && (
-              <button className="link-button" onClick={() => handleDelete(p)}>
-                削除
-              </button>
+              <span className="post-actions">
+                <button className="link-button" onClick={() => setEditingId(p.id)}>
+                  編集
+                </button>
+                <button className="link-button" onClick={() => handleDelete(p)}>
+                  削除
+                </button>
+              </span>
             )}
           </div>
         </li>
-      ))}
+        )
+      )}
       </ul>
     </>
   );

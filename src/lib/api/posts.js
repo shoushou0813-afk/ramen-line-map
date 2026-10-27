@@ -165,6 +165,23 @@ export async function createPost({ session, stationId, shopName, genre, memo, ra
 }
 
 /**
+ * 投稿の中身を書き換える。駅・投稿者・投稿日時は変えない。
+ * 写真を差し替えたときは、新しい写真で保存できてから古い写真をストレージから消す（保存に失敗しても写真が消えないように）。
+ * 本人の投稿しか書き換えられないことと、書き換えられる列は、RLS と列の権限で保証している。
+ */
+export async function updatePost(post, { shopName, genre, memo, rating, visitedOn, imageUrl }) {
+  const { error } = await supabase
+    .from("posts")
+    .update({ shop_name: shopName, genre, memo, rating, visited_on: visitedOn, image_url: imageUrl })
+    .eq("id", post.id);
+  if (error) throw error;
+
+  if (!post.image_url || post.image_url === imageUrl) return;
+  const path = storagePathFromUrl(post.image_url);
+  if (path) await supabase.storage.from(IMAGE_BUCKET).remove([path]);
+}
+
+/**
  * 自分の投稿の user_name を新しい表示名に書き換える。
  * 本人の投稿しか書き換えられないことと、user_name 以外の列を書き換えられないことは、RLS と列の権限で保証している。
  */

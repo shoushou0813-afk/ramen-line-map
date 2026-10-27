@@ -22,6 +22,11 @@ export function postDate(post) {
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
 }
 
+/** 編集フォームの日付欄の初期値。食べた日がない古い投稿は、投稿した日にする */
+export function postDateInputValue(post) {
+  return post.visited_on ?? toDateInputValue(new Date(post.created_at));
+}
+
 /** 日付欄の値に問題があればエラーメッセージを返す。問題がなければ空文字 */
 export function validateVisitedOn(value, today = toDateInputValue(new Date())) {
   if (!value) return "日付を選択してください";

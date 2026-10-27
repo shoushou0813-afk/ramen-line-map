@@ -146,7 +146,8 @@ export async function uploadPostImage(file, userId) {
 /**
  * 投稿を保存する。
  * user_id は RLS のポリシーで本人確認に使うため、必ずログイン中のユーザーの id を入れる。
- * user_name は表示のたびに認証情報を取りに行かずに済むよう、投稿時点の表示名を保存している（意図的な非正規化）。
+ * user_name は表示のたびに認証情報を取りに行かずに済むよう、表示名を投稿にも持たせている（意図的な非正規化）。
+ * 表示名を変えたときは renameMyPosts で過去の投稿もそろえる。
  */
 export async function createPost({ session, stationId, shopName, genre, memo, rating, visitedOn, imageUrl }) {
   const { error } = await supabase.from("posts").insert({
@@ -160,6 +161,15 @@ export async function createPost({ session, stationId, shopName, genre, memo, ra
     user_id: session.user.id,
     user_name: displayName(session.user),
   });
+  if (error) throw error;
+}
+
+/**
+ * 自分の投稿の user_name を新しい表示名に書き換える。
+ * 本人の投稿しか書き換えられないことと、user_name 以外の列を書き換えられないことは、RLS と列の権限で保証している。
+ */
+export async function renameMyPosts(userId, name) {
+  const { error } = await supabase.from("posts").update({ user_name: name.trim() }).eq("user_id", userId);
   if (error) throw error;
 }
 

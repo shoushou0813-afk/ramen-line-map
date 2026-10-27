@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { createPost, uploadPostImage } from "../lib/api/posts";
+import { createPost, updatePost, uploadPostImage } from "../lib/api/posts";
 import { GENRES } from "../data/lines";
-import { toDateInputValue, validateVisitedOn } from "../lib/date";
+import { postDateInputValue, toDateInputValue, validateVisitedOn } from "../lib/date";
 
 /** 入力内容に問題があればエラーメッセージを返す。問題がなければ空文字 */
 function validateInput({ shopName, rating, visitedOn }) {
@@ -10,14 +10,18 @@ function validateInput({ shopName, rating, visitedOn }) {
   return validateVisitedOn(visitedOn);
 }
 
-export default function PostForm({ session, stationId, onPosted }) {
-  const [shopName, setShopName] = useState("");
-  const [genre, setGenre] = useState(GENRES[0]);
-  const [memo, setMemo] = useState("");
-  const [rating, setRating] = useState(0);
-  const [visitedOn, setVisitedOn] = useState(() => toDateInputValue(new Date()));
+// post を渡すと、その投稿を編集するフォームになる（入力欄に今の内容が入り、保存で上書きする）
+export default function PostForm({ session, stationId, onPosted, post = null, onCancel }) {
+  const editing = Boolean(post);
+  const [shopName, setShopName] = useState(post?.shop_name ?? "");
+  const [genre, setGenre] = useState(post?.genre ?? GENRES[0]);
+  const [memo, setMemo] = useState(post?.memo ?? "");
+  const [rating, setRating] = useState(post?.rating ?? 0);
+  const [visitedOn, setVisitedOn] = useState(() => (post ? postDateInputValue(post) : toDateInputValue(new Date())));
   const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
+  // 編集時に、今の写真をそのまま使う場合の URL。「写真を外す」で null にする
+  const [currentImageUrl, setCurrentImageUrl] = useState(post?.image_url ?? null);
+  const [imagePreview, setImagePreview] = useState(post?.image_url ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,7 +30,13 @@ export default function PostForm({ session, stationId, onPosted }) {
   function handleImageChange(e) {
     const file = e.target.files?.[0] ?? null;
     setImageFile(file);
-    setImagePreview(file ? URL.createObjectURL(file) : "");
+    setImagePreview(file ? URL.createObjectURL(file) : currentImageUrl ?? "");
+  }
+
+  function removeImage() {
+    setImageFile(null);
+    setCurrentImageUrl(null);
+    setImagePreview("");
   }
 
   function resetForm() {
@@ -49,7 +59,7 @@ export default function PostForm({ session, stationId, onPosted }) {
     setSaving(true);
     setError("");
 
-    let imageUrl = null;
+    let imageUrl = currentImageUrl;
     if (imageFile) {
       try {
         imageUrl = await uploadPostImage(imageFile, session.user.id);
@@ -61,32 +71,28 @@ export default function PostForm({ session, stationId, onPosted }) {
       }
     }
 
+    const fields = { shopName: shopName.trim(), genre, memo: memo.trim() || null, rating, visitedOn, imageUrl };
     try {
-      await createPost({
-        session,
-        stationId,
-        shopName: shopName.trim(),
-        genre,
-        memo: memo.trim() || null,
-        rating,
-        visitedOn,
-        imageUrl,
-      });
-    } catch (insertError) {
-      console.error(insertError);
+      if (editing) {
+        await updatePost(post, fields);
+      } else {
+        await createPost({ session, stationId, ...fields });
+      }
+    } catch (saveError) {
+      console.error(saveError);
       setSaving(false);
       setError("保存に失敗しました。もう一度試してください。");
       return;
     }
 
     setSaving(false);
-    resetForm();
+    if (!editing) resetForm();
     onPosted();
   }
 
   return (
     <div className="form">
-      <h3 className="form-title">投稿する</h3>
+      <h3 className="form-title">{editing ? "記録を編集" : "投稿する"}</h3>
 
       {!loggedIn && <p className="notice">投稿するにはログインしてください</p>}
 
@@ -156,12 +162,22 @@ export default function PostForm({ session, stationId, onPosted }) {
       />
 
       {imagePreview && <img className="form-image-preview" src={imagePreview} alt="プレビュー" />}
+      {editing && imagePreview && (
+        <button type="button" className="link-button" onClick={removeImage} disabled={saving}>
+          写真を外す
+        </button>
+      )}
 
       {error && <p className="error">{error}</p>}
 
       <button className="button primary" onClick={handleSubmit} disabled={!loggedIn || saving}>
-        {saving ? "保存中..." : "記録する"}
+        {saving ? "保存中..." : editing ? "保存する" : "記録する"}
       </button>
+      {editing && (
+        <button className="button wide" onClick={onCancel} disabled={saving}>
+          キャンセル
+        </button>
+      )}
     </div>
   );
 }

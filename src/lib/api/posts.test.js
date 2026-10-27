@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 // テストでは Supabase に接続しないので、クライアントを空のものに差し替える
 vi.mock("../supabase", () => ({ supabase: {} }));
 
-import { countByStation, mergeNewest, shopNamePattern, storagePathFromUrl } from "./posts.js";
+import { countByStation, fetchAllPages, mergeNewest, shopNamePattern, storagePathFromUrl } from "./posts.js";
 
 describe("countByStation", () => {
   it("駅IDごとに件数を数える", () => {
@@ -48,5 +48,35 @@ describe("mergeNewest", () => {
 
   it("limit 件までに切り詰める", () => {
     expect(mergeNewest([[a, b, c]], 2).map((p) => p.id)).toEqual(["b", "c"]);
+  });
+});
+
+describe("fetchAllPages", () => {
+  // 0〜(total-1) の番号を行に見立て、from〜to の範囲を返す偽の問い合わせ
+  const fakeTable = (total) => {
+    const calls = [];
+    const fetchPage = async (from, to) => {
+      calls.push([from, to]);
+      return Array.from({ length: Math.max(0, Math.min(to, total - 1) - from + 1) }, (_, i) => from + i);
+    };
+    return { fetchPage, calls };
+  };
+
+  it("1ページに収まらない行も、分けて取って全部集める", async () => {
+    const { fetchPage, calls } = fakeTable(2500);
+    const rows = await fetchAllPages(fetchPage, 1000);
+    expect(rows).toHaveLength(2500);
+    expect(rows.at(-1)).toBe(2499);
+    expect(calls).toEqual([[0, 999], [1000, 1999], [2000, 2999]]);
+  });
+
+  it("ちょうど1ページ分なら、空のページを確かめてから終える", async () => {
+    const { fetchPage, calls } = fakeTable(1000);
+    expect(await fetchAllPages(fetchPage, 1000)).toHaveLength(1000);
+    expect(calls).toHaveLength(2);
+  });
+
+  it("行がなければ空の配列を返す", async () => {
+    expect(await fetchAllPages(fakeTable(0).fetchPage, 1000)).toEqual([]);
   });
 });

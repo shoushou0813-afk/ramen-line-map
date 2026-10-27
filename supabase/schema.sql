@@ -42,6 +42,17 @@ create policy "本人だけ削除できる"
   on public.posts for delete
   using (auth.uid() = user_id);
 
+-- 表示名を変えたとき、自分の過去の投稿の user_name もそろえるために更新を許す。
+-- RLS は行しか絞れないので、列の権限で user_name 以外（評価・店名・user_id など）は書き換えられないようにする
+revoke update on public.posts from anon, authenticated;
+grant update (user_name) on public.posts to authenticated;
+
+drop policy if exists "本人だけ表示名を更新できる" on public.posts;
+create policy "本人だけ表示名を更新できる"
+  on public.posts for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 -- 投稿写真用の Storage バケット。
 -- ファイルは "{user_id}/xxxx.jpg" のパスで保存する（本人判定に使うため）
 insert into storage.buckets (id, name, public)

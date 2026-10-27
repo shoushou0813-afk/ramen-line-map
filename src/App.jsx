@@ -29,6 +29,8 @@ export default function App() {
   const [hiddenRankUserIds, setHiddenRankUserIds] = useState(() => new Set());
   const [countsError, setCountsError] = useState("");
   const [postsError, setPostsError] = useState("");
+  // 表示名を変えたら増やす。リールとマイアカウントの key に使い、作り直して投稿を読み直させる
+  const [renameCount, setRenameCount] = useState(0);
 
   // --- ログイン状態 ---------------------------------------------------
   useEffect(() => {
@@ -105,6 +107,12 @@ export default function App() {
     loadPosts();
   }, [loadCounts, loadUserGenreCounts, loadPosts]);
 
+  // 表示名を変えた後は、過去の投稿の名前も変わっているので一覧を取り直す
+  const handleRenamed = useCallback(() => {
+    loadPosts();
+    setRenameCount((n) => n + 1);
+  }, [loadPosts]);
+
   async function signIn() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -153,7 +161,11 @@ export default function App() {
 
         <div className="auth">
           {session ? (
-            <NameEditor user={session.user} badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} showTitle={false} />}>
+            <NameEditor
+              user={session.user}
+              badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} showTitle={false} />}
+              onSaved={handleRenamed}
+            >
               <button className="tab" onClick={signOut}>
                 ログアウト
               </button>
@@ -189,7 +201,7 @@ export default function App() {
       {mode === "reel" && (
         <section className="card">
           <h2 className="card-title">リール</h2>
-          <Reel userGenreCounts={visibleGenreCounts} />
+          <Reel key={renameCount} userGenreCounts={visibleGenreCounts} />
         </section>
       )}
 
@@ -198,6 +210,7 @@ export default function App() {
           <h2 className="card-title">マイアカウント</h2>
           {session ? (
             <MyPage
+              key={renameCount}
               session={session}
               userGenreCounts={userGenreCounts}
               visibleGenreCounts={visibleGenreCounts}

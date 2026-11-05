@@ -126,10 +126,65 @@ export const LINES = {
       { id: "chiba", name: "千葉", x: 90, y: 460, label: "bottom" },
     ],
   },
+  keihintohoku: {
+    id: "keihintohoku",
+    name: "京浜東北線",
+    viewBox: "0 0 480 540",
+    loop: false,
+    // 全47駅は多すぎるので、山手線と重なる駅（田端〜品川）は山手線のタブに任せて外した。
+    // 残りから蒲田と、乗る人の多い駅・ラーメン店の多い駅を選んで16駅にしている。
+    // 王子の次が大井町なのは、間の山手線の区間を飛ばしているため。
+    // 形は総武線と同じ、4駅ごとに折り返す蛇行
+    stations: [
+      { id: "omiya", name: "大宮", x: 90, y: 70, label: "top" },
+      { id: "urawa", name: "浦和", x: 190, y: 70, label: "top" },
+      { id: "minamiurawa", name: "南浦和", x: 290, y: 70, label: "top" },
+      { id: "warabi", name: "蕨", x: 390, y: 70, label: "top" },
+      { id: "kawaguchi", name: "川口", x: 390, y: 200, label: "right" },
+      { id: "akabane", name: "赤羽", x: 290, y: 200, label: "bottom" },
+      { id: "oji", name: "王子", x: 190, y: 200, label: "bottom" },
+      { id: "oimachi", name: "大井町", x: 90, y: 200, label: "top" },
+      { id: "omori", name: "大森", x: 90, y: 330, label: "left" },
+      { id: "kamata", name: "蒲田", x: 190, y: 330, label: "top" },
+      { id: "kawasaki", name: "川崎", x: 290, y: 330, label: "top" },
+      { id: "tsurumi", name: "鶴見", x: 390, y: 330, label: "top" },
+      { id: "yokohama", name: "横浜", x: 390, y: 460, label: "right" },
+      { id: "sakuragicho", name: "桜木町", x: 290, y: 460, label: "bottom" },
+      { id: "kannai", name: "関内", x: 190, y: 460, label: "bottom" },
+      { id: "ofuna", name: "大船", x: 90, y: 460, label: "bottom" },
+    ],
+  },
+
+  tokaido: {
+    id: "tokaido",
+    name: "東海道線",
+    viewBox: "0 0 480 540",
+    loop: false,
+    // 東京・新橋・品川は山手線のタブにあるので外し、川崎から熱海までにした（早川・根府川は省略）。
+    // 川崎・横浜・大船は京浜東北線と同じ id なので、どちらのタブから見ても件数が同じになる
+    stations: [
+      { id: "kawasaki", name: "川崎", x: 90, y: 70, label: "top" },
+      { id: "yokohama", name: "横浜", x: 190, y: 70, label: "top" },
+      { id: "totsuka", name: "戸塚", x: 290, y: 70, label: "top" },
+      { id: "ofuna", name: "大船", x: 390, y: 70, label: "top" },
+      { id: "fujisawa", name: "藤沢", x: 390, y: 200, label: "right" },
+      { id: "tsujido", name: "辻堂", x: 290, y: 200, label: "bottom" },
+      { id: "chigasaki", name: "茅ケ崎", x: 190, y: 200, label: "bottom" },
+      { id: "hiratsuka", name: "平塚", x: 90, y: 200, label: "top" },
+      { id: "oiso", name: "大磯", x: 90, y: 330, label: "left" },
+      { id: "ninomiya", name: "二宮", x: 190, y: 330, label: "top" },
+      { id: "kozu", name: "国府津", x: 290, y: 330, label: "top" },
+      { id: "kamonomiya", name: "鴨宮", x: 390, y: 330, label: "top" },
+      { id: "odawara", name: "小田原", x: 390, y: 460, label: "right" },
+      { id: "manazuru", name: "真鶴", x: 290, y: 460, label: "bottom" },
+      { id: "yugawara", name: "湯河原", x: 190, y: 460, label: "bottom" },
+      { id: "atami", name: "熱海", x: 90, y: 460, label: "bottom" },
+    ],
+  },
 };
 
 // タブに出す順番。オブジェクトのキー順に頼ると環境で変わる可能性があるので明示する
-export const LINE_ORDER = ["chuo", "yamanote", "denentoshi", "toyoko", "sobu"];
+export const LINE_ORDER = ["chuo", "yamanote", "denentoshi", "toyoko", "sobu", "keihintohoku", "tokaido"];
 
 // 駅 id から駅名を引く用。路線をまたいで重複する駅は最初に見つかった方でいい
 const STATION_NAMES = {};

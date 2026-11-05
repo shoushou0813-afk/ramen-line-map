@@ -39,6 +39,13 @@ describe("lines.js", () => {
     }
   });
 
+  it("京浜東北線には、東海道線の駅を入れない（東海道線のタブに任せる）", () => {
+    const tokaidoIds = LINES.tokaido.stations.map((st) => st.id);
+    for (const st of LINES.keihintohoku.stations) {
+      expect(tokaidoIds).not.toContain(st.id);
+    }
+  });
+
   it("京浜東北線に蒲田がある", () => {
     expect(LINES.keihintohoku.stations.map((st) => st.id)).toContain("kamata");
   });

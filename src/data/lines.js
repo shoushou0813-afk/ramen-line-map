@@ -131,10 +131,11 @@ export const LINES = {
     name: "京浜東北線",
     viewBox: "0 0 480 540",
     loop: false,
-    // 全47駅は多すぎるので、山手線と重なる駅（田端〜品川）は山手線のタブに任せて外した。
-    // 残りから蒲田と、乗る人の多い駅・ラーメン店の多い駅を選んで16駅にしている。
-    // 王子の次が大井町なのは、間の山手線の区間を飛ばしているため。
-    // 形は総武線と同じ、4駅ごとに折り返す蛇行
+    // 全47駅は多すぎるので、ほかのタブと重なる駅は外した。
+    // - 山手線と重なる駅（田端〜品川）は山手線のタブに任せる。王子の次が大井町なのはこのため
+    // - 東海道線と重なる駅（川崎・横浜・大船）は東海道線のタブに任せる
+    // 残りから蒲田と、乗る人の多い駅、ラーメンで有名な駅（東十条・新杉田）を選んだ。
+    // 形は総武線と同じ、4駅ごとに折り返す蛇行（最後の段だけ3駅）
     stations: [
       { id: "omiya", name: "大宮", x: 90, y: 70, label: "top" },
       { id: "urawa", name: "浦和", x: 190, y: 70, label: "top" },
@@ -142,16 +143,15 @@ export const LINES = {
       { id: "warabi", name: "蕨", x: 390, y: 70, label: "top" },
       { id: "kawaguchi", name: "川口", x: 390, y: 200, label: "right" },
       { id: "akabane", name: "赤羽", x: 290, y: 200, label: "bottom" },
-      { id: "oji", name: "王子", x: 190, y: 200, label: "bottom" },
-      { id: "oimachi", name: "大井町", x: 90, y: 200, label: "top" },
-      { id: "omori", name: "大森", x: 90, y: 330, label: "left" },
-      { id: "kamata", name: "蒲田", x: 190, y: 330, label: "top" },
-      { id: "kawasaki", name: "川崎", x: 290, y: 330, label: "top" },
+      { id: "higashijujo", name: "東十条", x: 190, y: 200, label: "bottom" },
+      { id: "oji", name: "王子", x: 90, y: 200, label: "top" },
+      { id: "oimachi", name: "大井町", x: 90, y: 330, label: "left" },
+      { id: "omori", name: "大森", x: 190, y: 330, label: "top" },
+      { id: "kamata", name: "蒲田", x: 290, y: 330, label: "top" },
       { id: "tsurumi", name: "鶴見", x: 390, y: 330, label: "top" },
-      { id: "yokohama", name: "横浜", x: 390, y: 460, label: "right" },
-      { id: "sakuragicho", name: "桜木町", x: 290, y: 460, label: "bottom" },
-      { id: "kannai", name: "関内", x: 190, y: 460, label: "bottom" },
-      { id: "ofuna", name: "大船", x: 90, y: 460, label: "bottom" },
+      { id: "sakuragicho", name: "桜木町", x: 390, y: 460, label: "right" },
+      { id: "kannai", name: "関内", x: 290, y: 460, label: "bottom" },
+      { id: "shinsugita", name: "新杉田", x: 190, y: 460, label: "bottom" },
     ],
   },
 
@@ -161,7 +161,6 @@ export const LINES = {
     viewBox: "0 0 480 540",
     loop: false,
     // 東京・新橋・品川は山手線のタブにあるので外し、川崎から熱海までにした（早川・根府川は省略）。
-    // 川崎・横浜・大船は京浜東北線と同じ id なので、どちらのタブから見ても件数が同じになる
     stations: [
       { id: "kawasaki", name: "川崎", x: 90, y: 70, label: "top" },
       { id: "yokohama", name: "横浜", x: 190, y: 70, label: "top" },

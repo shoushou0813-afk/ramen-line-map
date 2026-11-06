@@ -197,6 +197,11 @@ export function stationName(id) {
   return STATION_NAMES[id] ?? id;
 }
 
+/** その駅が出てくる路線の id を、タブの順番で返す。どの路線にもない駅なら空の配列 */
+export function linesOfStation(id) {
+  return LINE_ORDER.filter((key) => LINES[key].stations.some((st) => st.id === id));
+}
+
 /** 駅名にその文字を含む駅の id を返す。「新宿駅」のように最後に「駅」を付けて入力されても探せるようにする */
 export function stationIdsMatching(query) {
   const keyword = query.trim().replace(/駅$/, "");

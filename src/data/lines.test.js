@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { LINES, LINE_ORDER, stationName, stationIdsMatching, genresMatching } from "./lines.js";
+import { LINES, LINE_ORDER, stationName, stationIdsMatching, genresMatching, linesOfStation } from "./lines.js";
 
 describe("lines.js", () => {
   it("LINE_ORDERの路線がすべてLINESに存在する", () => {
@@ -54,6 +54,17 @@ describe("lines.js", () => {
     expect(stationName("shibuya")).toBe("渋谷");
     expect(stationName("mitaka")).toBe("三鷹");
     expect(stationName("nonexistent")).toBe("nonexistent");
+  });
+});
+
+describe("linesOfStation", () => {
+  it("その駅が出てくる路線を、タブの順番で返す", () => {
+    expect(linesOfStation("shibuya")).toEqual(["yamanote", "denentoshi", "toyoko"]);
+    expect(linesOfStation("kamata")).toEqual(["keihintohoku"]);
+  });
+
+  it("どの路線にもない駅なら空の配列", () => {
+    expect(linesOfStation("sapporo")).toEqual([]);
   });
 });
 

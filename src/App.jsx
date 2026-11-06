@@ -3,7 +3,8 @@ import { supabase } from "./lib/supabase";
 import { fetchPostsByStation, fetchStationCounts, fetchUserGenreCounts } from "./lib/api/posts";
 import { fetchHiddenRankUserIds } from "./lib/api/rankSettings";
 import { hideRanks } from "./lib/rank";
-import { LINES, LINE_ORDER } from "./data/lines";
+import { LINES, LINE_ORDER, linesOfStation } from "./data/lines";
+import { favoriteStationIds, toggleFavorite, canAddFavorite, saveFavoriteStations } from "./lib/api/favorites";
 import LineMap from "./components/LineMap";
 import StationPanel from "./components/StationPanel";
 import Reel from "./components/Reel";
@@ -11,6 +12,7 @@ import NameEditor from "./components/NameEditor";
 import BackToTop from "./components/BackToTop";
 import MyPage from "./components/MyPage";
 import RankBadge from "./components/RankBadge";
+import FavoriteStations from "./components/FavoriteStations";
 
 const MODES = [
   { id: "map", label: "路線図" },
@@ -33,6 +35,10 @@ export default function App() {
   const [renameCount, setRenameCount] = useState(0);
   // 駅を選んだら、路線図が画面の一番上に来るまでスクロールするために使う
   const mapRef = useRef(null);
+  const [favoriteSaving, setFavoriteSaving] = useState(false);
+  const [favoriteError, setFavoriteError] = useState("");
+  // 開いたときに一度だけ、1番目のお気に入り駅を選んでおくための印
+  const openedFavoriteRef = useRef(false);
 
   // --- ログイン状態 ---------------------------------------------------
   useEffect(() => {
@@ -115,6 +121,19 @@ export default function App() {
     setRenameCount((n) => n + 1);
   }, [loadPosts]);
 
+  // お気に入りは session の user_metadata から読む。保存すると session ごと入れ替わるので、別に state は持たない
+  const favoriteIds = favoriteStationIds(session?.user);
+
+  // 開いたとき、お気に入りがあれば1番目の駅とその路線を最初から出しておく
+  useEffect(() => {
+    if (openedFavoriteRef.current || !session) return;
+    openedFavoriteRef.current = true;
+    const first = favoriteIds[0];
+    if (!first) return;
+    setLineId(linesOfStation(first)[0]);
+    setStationId(first);
+  }, [session, favoriteIds]);
+
   // 駅を押したら、路線図の上端が画面の一番上に来るまで下げる。
   // 路線図は全部見えたまま押せて、空いた下の部分にその駅の記録が出る
   function selectStation(id) {
@@ -122,6 +141,25 @@ export default function App() {
     const map = mapRef.current;
     if (!map) return;
     window.scrollTo({ top: window.scrollY + map.getBoundingClientRect().top - 8, behavior: "smooth" });
+  }
+
+  // お気に入り駅を押したら、今の路線にその駅があればそのまま、なければその駅がある路線に切り替える
+  function selectFavorite(id) {
+    const lines = linesOfStation(id);
+    if (!lines.includes(lineId)) setLineId(lines[0]);
+    selectStation(id);
+  }
+
+  async function handleToggleFavorite() {
+    setFavoriteSaving(true);
+    setFavoriteError("");
+    try {
+      await saveFavoriteStations(toggleFavorite(favoriteIds, stationId));
+    } catch (error) {
+      console.error(error);
+      setFavoriteError("お気に入りを保存できませんでした。もう一度試してください。");
+    }
+    setFavoriteSaving(false);
   }
 
   async function signIn() {
@@ -194,6 +232,15 @@ export default function App() {
 
       {mode === "map" && (
         <>
+          {session && (
+            <FavoriteStations
+              favoriteIds={favoriteIds}
+              counts={counts}
+              selectedId={stationId}
+              onSelect={selectFavorite}
+            />
+          )}
+
           <section className="card">
             <h2 className="card-title">路線図</h2>
             <div ref={mapRef}>
@@ -207,6 +254,15 @@ export default function App() {
             session={session}
             userGenreCounts={visibleGenreCounts}
             onChanged={refresh}
+            favorite={
+              session && {
+                on: favoriteIds.includes(stationId),
+                canAdd: canAddFavorite(favoriteIds),
+                saving: favoriteSaving,
+                error: favoriteError,
+                onToggle: handleToggleFavorite,
+              }
+            }
           />
         </>
       )}

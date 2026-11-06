@@ -167,6 +167,52 @@ body {
   margin: 0 0 16px;
 }
 
+/* --- お気に入り駅 --- */
+.favorite-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.favorite {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--chip);
+  color: var(--link);
+  font-size: 16px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.favorite.is-selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1d3f8a;
+}
+
+.favorite-name {
+  font-weight: 700;
+}
+
+.favorite-count {
+  font-size: 13px;
+}
+
+.favorite-toggle {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.favorite-toggle .notice,
+.favorite-toggle .error {
+  margin-top: 8px;
+}
+
 /* --- 路線図 --- */
 .map-frame {
   background: #f7f7f7;

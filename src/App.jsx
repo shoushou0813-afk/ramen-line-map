@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase";
 import { fetchPostsByStation, fetchStationCounts, fetchUserGenreCounts } from "./lib/api/posts";
 import { fetchHiddenRankUserIds } from "./lib/api/rankSettings";
+import { fetchAllLikes, likePost, unlikePost } from "./lib/api/likes";
+import { summarizeLikes, toggleLikeRows } from "./lib/likes";
 import { hideRanks } from "./lib/rank";
 import { LINES, LINE_ORDER } from "./data/lines";
 import LineMap from "./components/LineMap";
@@ -11,6 +13,7 @@ import NameEditor from "./components/NameEditor";
 import BackToTop from "./components/BackToTop";
 import MyPage from "./components/MyPage";
 import RankBadge from "./components/RankBadge";
+import { LikesContext } from "./components/LikeButton";
 
 const MODES = [
   { id: "map", label: "路線図" },
@@ -27,6 +30,7 @@ export default function App() {
   const [posts, setPosts] = useState([]);
   const [userGenreCounts, setUserGenreCounts] = useState({});
   const [hiddenRankUserIds, setHiddenRankUserIds] = useState(() => new Set());
+  const [likeRows, setLikeRows] = useState([]); // 全部のいいね（{ post_id, user_id }）
   const [countsError, setCountsError] = useState("");
   const [postsError, setPostsError] = useState("");
   // 表示名を変えたら増やす。リールとマイアカウントの key に使い、作り直して投稿を読み直させる
@@ -75,6 +79,32 @@ export default function App() {
     }
   }, []);
 
+  // --- いいね（トッピング） -------------------------------------------
+  // 読めなくても投稿は見られるので、エラーは画面に出さず0件として扱う
+  const loadLikes = useCallback(async () => {
+    try {
+      setLikeRows(await fetchAllLikes());
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  // 押したらすぐ画面に反映し、保存に失敗したら読み直して元に戻す
+  const userId = session?.user?.id ?? null;
+  const toggleLike = useCallback(
+    async (postId, liked) => {
+      if (!userId) return;
+      setLikeRows((rows) => toggleLikeRows(rows, postId, userId, liked));
+      try {
+        await (liked ? likePost(postId, userId) : unlikePost(postId, userId));
+      } catch (error) {
+        console.error(error);
+        loadLikes();
+      }
+    },
+    [userId, loadLikes]
+  );
+
   // --- 選択中の駅の投稿 -----------------------------------------------
   const loadPosts = useCallback(async () => {
     try {
@@ -97,6 +127,10 @@ export default function App() {
   useEffect(() => {
     loadHiddenRankUserIds();
   }, [loadHiddenRankUserIds]);
+
+  useEffect(() => {
+    loadLikes();
+  }, [loadLikes]);
 
   useEffect(() => {
     loadPosts();
@@ -139,8 +173,10 @@ export default function App() {
   const line = LINES[lineId];
   // 投稿一覧など、ほかの人も見る場所ではこちらを使う（非公開の人のレベルは出さない）
   const visibleGenreCounts = hideRanks(userGenreCounts, hiddenRankUserIds);
+  const likes = { ...summarizeLikes(likeRows, userId), userId, onToggle: toggleLike };
 
   return (
+    <LikesContext.Provider value={likes}>
     <div className="page">
       <header className="header">
         <h1 className="title">ラーメン路線図マップ</h1>
@@ -239,5 +275,6 @@ export default function App() {
 
       <BackToTop />
     </div>
+    </LikesContext.Provider>
   );
 }

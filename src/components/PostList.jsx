@@ -6,6 +6,7 @@ import { DEFAULT_SORT, sortPosts } from "../lib/sortPosts";
 import PostForm from "./PostForm";
 import SortSelect from "./SortSelect";
 import RankBadge from "./RankBadge";
+import LikeButton from "./LikeButton";
 import Stars from "./Stars";
 
 // showStation を付けると駅名も出す（駅をまたいで並べるマイアカウント用）
@@ -54,7 +55,10 @@ export default function PostList({ posts, session, userGenreCounts, onChanged, s
             <span className="post-shop">{p.shop_name}</span>
             <span className="tag">{p.genre}</span>
           </div>
-          <Stars value={p.rating ?? 0} />
+          <div className="rating-row">
+            <Stars value={p.rating ?? 0} />
+            <LikeButton post={p} />
+          </div>
           {p.memo && <p className="post-memo">{p.memo}</p>}
           {p.image_url && <img className="post-image" src={p.image_url} alt={p.shop_name} loading="lazy" />}
           <div className="post-foot">

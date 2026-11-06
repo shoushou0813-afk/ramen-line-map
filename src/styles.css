@@ -577,3 +577,52 @@ body {
   cursor: pointer;
   z-index: 10;
 }
+
+/* --- いいね（トッピングを乗せる） --- */
+.rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px 3px 6px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.like-button.is-liked {
+  border-color: #f3c9b8;
+  background: #fff4ee;
+  color: #c2410c;
+  font-weight: 700;
+}
+
+/* 押していないときは、トッピングの絵を灰色にする */
+.like-button:not(.is-liked) .like-icon * {
+  fill: #d4d4d4;
+  stroke: #bdbdbd;
+}
+
+.like-button.is-disabled {
+  cursor: default;
+}
+
+.like-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.like-count {
+  font-weight: 700;
+}

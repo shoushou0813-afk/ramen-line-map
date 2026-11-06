@@ -4,6 +4,7 @@ import { stationName } from "../data/lines";
 import { DEFAULT_SORT, sortPosts } from "../lib/sortPosts";
 import SortSelect from "./SortSelect";
 import RankBadge from "./RankBadge";
+import LikeButton from "./LikeButton";
 import Stars from "./Stars";
 
 // 入力が止まってから検索するまでの待ち時間（ミリ秒）。1文字打つたびに通信しないようにする
@@ -68,7 +69,10 @@ export default function Reel({ userGenreCounts }) {
               <div className="reel-station">{stationName(p.station_id)}</div>
               <div className="reel-shop">{p.shop_name}</div>
               <span className="tag">{p.genre}</span>
-              <Stars value={p.rating ?? 0} />
+              <div className="rating-row">
+                <Stars value={p.rating ?? 0} />
+                <LikeButton post={p} />
+              </div>
               {p.memo && <p className="post-memo">{p.memo}</p>}
               {p.image_url && <img className="post-image" src={p.image_url} alt={p.shop_name} loading="lazy" />}
               <div className="post-foot">

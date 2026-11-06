@@ -105,3 +105,29 @@ drop policy if exists "本人だけ変えられる（ランク設定）" on publ
 create policy "本人だけ変えられる（ランク設定）"
   on public.rank_settings for update
   using (auth.uid() = user_id);
+
+-- いいね（トッピングを乗せる）。1人が1つの投稿に押せるのは1回だけ（主キーで重複を防ぐ）。
+-- 件数を出すために誰でも読めるようにし、押す・取り消すのは本人だけにする
+create table if not exists public.post_likes (
+  post_id    uuid not null references public.posts (id) on delete cascade,
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (post_id, user_id)
+);
+
+alter table public.post_likes enable row level security;
+
+drop policy if exists "誰でも読める（いいね）" on public.post_likes;
+create policy "誰でも読める（いいね）"
+  on public.post_likes for select
+  using (true);
+
+drop policy if exists "本人だけ押せる（いいね）" on public.post_likes;
+create policy "本人だけ押せる（いいね）"
+  on public.post_likes for insert
+  with check (auth.uid() = user_id);
+
+drop policy if exists "本人だけ取り消せる（いいね）" on public.post_likes;
+create policy "本人だけ取り消せる（いいね）"
+  on public.post_likes for delete
+  using (auth.uid() = user_id);

@@ -1,0 +1,18 @@
+{
+  "name": "就活タイムテーブル",
+  "short_name": "就活割",
+  "description": "説明会・ES締切・面接を時間割の形で並べるアプリ",
+  "lang": "ja",
+  "dir": "ltr",
+  "start_url": "/shukatsu/",
+  "scope": "/shukatsu/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fafafa",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "/shukatsu/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/shukatsu/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/shukatsu/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

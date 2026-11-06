@@ -1,0 +1,959 @@
+/* 就活タイムテーブルの見た目。
+   ラーメン路線図側（src/styles.css）とは別ページなので、変数も含めてここで完結させている。 */
+
+:root {
+  --accent: #2563eb;
+  --danger: #dc2626;
+  --warn: #d97706;
+  --border: #e5e5e5;
+  --muted: #767676;
+  --chip: #f2f2f2;
+  --grid-line: #ececec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #fafafa;
+  color: #111;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  /* env(safe-area-inset-*) … iPhoneのノッチやホームバーに隠れる幅。
+     ホーム画面から起動すると画面いっぱいに広がるので、その分を足しておく */
+  padding: calc(24px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom))
+    calc(16px + env(safe-area-inset-left));
+}
+
+/* --- ヘッダー --- */
+.title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 16px 0 8px;
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 16px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #444;
+  font-size: 14px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* --- カード --- */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.card-head .card-title {
+  margin: 0;
+}
+
+.week-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.button {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #f6f6f6;
+}
+
+.button.is-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.button.is-on {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.button.is-danger {
+  color: var(--danger);
+  border-color: #f3c9c9;
+}
+
+.today-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: #e8f0ff;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* --- 種別フィルタ／種別選択 --- */
+.type-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.type-chip {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #999;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.type-chip.is-active {
+  font-weight: 600;
+}
+
+/* --- 時間割 --- */
+/* 7列を狭い画面に押し込むと読めないので、最小幅を決めて横スクロールさせる */
+.tt-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tt-row {
+  display: grid;
+  grid-template-columns: 44px repeat(7, 1fr);
+}
+
+.tt-head .tt-day-head {
+  text-align: center;
+  padding: 6px 0;
+  border-left: 1px solid var(--grid-line);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.tt-day-head.is-today {
+  background: #eef4ff;
+  border-radius: 6px 6px 0 0;
+}
+
+.tt-weekday {
+  display: block;
+  font-weight: 700;
+}
+
+.tt-md {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.tt-allday {
+  border-top: 1px solid var(--grid-line);
+  border-bottom: 1px solid #d9d9d9;
+  min-height: 30px;
+}
+
+.tt-allday-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  padding: 6px 4px 0 0;
+}
+
+.tt-allday-cell {
+  border-left: 1px solid var(--grid-line);
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  /* これがないと、中の文字の長さぶんセルが広がって隣の列にはみ出す */
+  min-width: 0;
+}
+
+.tt-chip {
+  min-width: 0;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 2px 4px;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tt-gutter {
+  position: relative;
+}
+
+.tt-hour {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+  padding-right: 4px;
+  /* 罫線と数字の上端を合わせるため、少しだけ上にずらす */
+  transform: translateY(-5px);
+}
+
+.tt-col {
+  position: relative;
+  border-left: 1px solid var(--grid-line);
+  cursor: crosshair;
+  /* 1時間ごとの横罫線を、要素を並べずに背景のしま模様で描く */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--grid-line) 0,
+    var(--grid-line) 1px,
+    transparent 1px,
+    transparent var(--hour-px)
+  );
+}
+
+.tt-col.is-today {
+  background-color: #f6f9ff;
+}
+
+.tt-event {
+  position: absolute;
+  border: 1px solid;
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tt-event-time {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.tt-event-company {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tt-event-type {
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+.tt-event.is-done,
+.tt-chip.is-done {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+/* --- 月表示 --- */
+.month-head,
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.month-head {
+  /* 下のマス目と列がずれないよう、枠線と隙間のぶんを合わせる */
+  gap: 2px;
+  padding: 0 1px;
+}
+
+.month-weekday {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  padding-bottom: 6px;
+}
+
+.month-grid {
+  gap: 2px;
+  background: var(--grid-line);
+  border: 1px solid var(--grid-line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.month-cell {
+  /* 高さだけ決めて、幅は列（1fr）に任せる。
+     aspect-ratio で正方形にすると、幅が縮めない下限になって
+     スマホで7列が画面からはみ出す */
+  min-height: 54px;
+  border: none;
+  background: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 2px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.month-cell:hover {
+  background: #f4f7ff;
+}
+
+.month-cell.is-outside {
+  background: #fafafa;
+  color: #bbb;
+}
+
+.month-cell.is-today {
+  background: #eef4ff;
+}
+
+.month-cell.is-selected {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.month-day {
+  font-size: 13px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.month-cell.is-today .month-day {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.month-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 2px;
+  min-height: 0;
+}
+
+.month-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: block;
+}
+
+.month-dot.is-done {
+  opacity: 0.3;
+}
+
+.month-more {
+  font-size: 9px;
+  line-height: 6px;
+  color: var(--muted);
+}
+
+/* --- 月表示で選んだ日の中身 --- */
+.month-day-panel {
+  margin-top: 14px;
+}
+
+.month-day-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.month-day-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.month-day-item {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.month-day-item:hover {
+  background: #f2f5ff;
+}
+
+.month-day-item.is-done {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.month-day-time {
+  flex: 0 0 60px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.month-day-company {
+  font-weight: 600;
+}
+
+.month-day-type {
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.month-day-place {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* --- 締切ボード --- */
+.upcoming-group + .upcoming-group {
+  margin-top: 14px;
+}
+
+.upcoming-head {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.upcoming-head.is-overdue {
+  color: var(--danger);
+}
+
+.upcoming-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upcoming-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.upcoming-item:hover {
+  background: #f2f5ff;
+}
+
+.countdown {
+  flex: 0 0 76px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+}
+
+.countdown.is-urgent {
+  color: var(--warn);
+}
+
+.countdown.is-overdue {
+  color: var(--danger);
+}
+
+.upcoming-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.upcoming-company {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.upcoming-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* --- リスト表示 --- */
+.list-group + .list-group {
+  margin-top: 16px;
+}
+
+.list-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-date.is-today {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-item.is-done .list-body {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.list-check {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.list-body {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.list-time {
+  color: var(--muted);
+  font-size: 12px;
+  flex: 0 0 60px;
+}
+
+.list-company {
+  font-weight: 600;
+}
+
+.list-type {
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.list-place {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* --- 追加ボタン（画面右下に固定） --- */
+.fab {
+  position: fixed;
+  right: calc(20px + env(safe-area-inset-right));
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* --- モーダル --- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.modal-title {
+  font-size: 17px;
+  margin: 0 0 16px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.field-row .field {
+  flex: 1;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #fff;
+}
+
+.input:focus {
+  outline: 2px solid #c7d7ff;
+  border-color: var(--accent);
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: -4px 0 12px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #444;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* --- ホーム画面に追加の案内 --- */
+.install-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #eef4ff;
+  border: 1px solid #c7d7ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.install-hint-body {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #1e3a8a;
+}
+
+.install-hint-body p {
+  margin: 2px 0 0;
+}
+
+.install-hint-close {
+  border: none;
+  background: none;
+  color: #1e3a8a;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+
+/* --- データの持ち出し --- */
+.data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.data-message {
+  font-size: 12px;
+  color: var(--accent);
+  margin: 4px 0 0;
+}
+
+/* --- エクセルの取り込み --- */
+.preview {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+  background: #fafafa;
+}
+
+.preview-title {
+  font-size: 14px;
+  margin: 0 0 8px;
+  word-break: break-all;
+}
+
+.preview-line {
+  font-size: 12px;
+  color: #444;
+  line-height: 1.7;
+  margin: 0 0 8px;
+}
+
+.preview-mapping {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.preview-mapping li {
+  font-size: 11px;
+  color: #444;
+  background: var(--chip);
+  border-radius: 4px;
+  padding: 2px 8px;
+}
+
+.preview-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.preview-type {
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.preview-company {
+  font-weight: 600;
+}
+
+.preview-when {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.preview-more {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.preview-skipped {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.preview-skipped summary {
+  cursor: pointer;
+}
+
+.preview-skipped ul {
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+  line-height: 1.7;
+}
+
+.preview-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* --- 画面が狭いとき --- */
+/* 時間割は7列あるので、まず余白を削って中身の幅を確保する。
+   それでも足りない場合は .tt-scroll が横スクロールで受け止める。 */
+@media (max-width: 480px) {
+  .page {
+    padding: 16px 8px 96px;
+  }
+
+  .card {
+    padding: 12px 10px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .countdown {
+    flex: 0 0 64px;
+    font-size: 12px;
+  }
+
+  .fab {
+    right: calc(12px + env(safe-area-inset-right));
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover … iPhoneのノッチ部分まで画面を使う。
+         端に隠れないよう、CSS側で safe-area-inset の余白を足している -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>就活タイムテーブル</title>
+    <meta name="description" content="説明会・ES締切・面接を時間割の形で並べるアプリ" />
+
+    <!-- ホーム画面に追加したときの設定（アイコン・名前・起動時の見た目） -->
+    <link rel="manifest" href="/shukatsu/manifest.webmanifest" />
+    <meta name="theme-color" content="#2563eb" />
+
+    <!-- iOSはmanifestのicons/displayを見ないので、同じ内容をmeta/linkでも指定する -->
+    <link rel="apple-touch-icon" href="/shukatsu/icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="就活割" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/shukatsu/main.jsx"></script>
+  </body>
+</html>

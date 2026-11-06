@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- アプリのアイコン。Androidの「マスカブル」表示で円や角丸に切り抜かれても
+       欠けないよう、中身は中央80%の内側に収めている。 -->
+  <rect width="512" height="512" fill="#2563eb"/>
+  <g>
+    <rect x="136" y="132" width="240" height="248" rx="18" fill="#ffffff"/>
+    <rect x="136" y="132" width="240" height="40" rx="18" fill="#dbeafe"/>
+    <rect x="136" y="158" width="240" height="14" fill="#dbeafe"/>
+    <!-- 曜日の区切り -->
+    <rect x="215" y="132" width="3" height="248" fill="#c7d7f5"/>
+    <rect x="294" y="132" width="3" height="248" fill="#c7d7f5"/>
+    <!-- 時間の区切り -->
+    <rect x="136" y="224" width="240" height="3" fill="#e3ebfa"/>
+    <rect x="136" y="276" width="240" height="3" fill="#e3ebfa"/>
+    <rect x="136" y="328" width="240" height="3" fill="#e3ebfa"/>
+    <!-- 予定のブロック -->
+    <rect x="146" y="184" width="60" height="82" rx="7" fill="#2563eb"/>
+    <rect x="225" y="236" width="60" height="60" rx="7" fill="#0f766e"/>
+    <rect x="304" y="288" width="60" height="82" rx="7" fill="#e8613c"/>
+  </g>
+</svg>

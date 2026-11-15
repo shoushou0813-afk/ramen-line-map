@@ -7,9 +7,11 @@
 | 名前 | 種類 | 説明 |
 | --- | --- | --- |
 | `LINES` | `export const` (object) | 路線ごとの定義(`id`, `name`, `viewBox`, `loop`, `stations`)。`stations` の各駅は `id`, `name`, `x`, `y`, `label`, （必要なら）`corner` を持つ。 |
-| `LINE_ORDER` | `export const` (array) | タブなどに表示する路線の順番。`["chuo", "yamanote", "denentoshi", "toyoko"]`。オブジェクトのキー順に依存しないよう明示的に定義。 |
+| `LINE_ORDER` | `export const` (array) | タブなどに表示する路線の順番。`["chuo", "yamanote", "denentoshi", "toyoko", "sobu", "keihintohoku", "tokaido"]`。オブジェクトのキー順に依存しないよう明示的に定義。 |
 | `STATION_NAMES` | `const` (object, モジュール内限定) | 駅ID→駅名の逆引き辞書。`LINE_ORDER` の順に全路線の駅を走査して構築。複数路線をまたいで同じIDの駅がある場合は最初に見つかった名前を採用。 |
 | `stationName(id)` | `export function` | `STATION_NAMES` から駅名を引く。見つからない場合は `id` をそのまま返す。 |
+| `linesOfStation(id)` | `export function` | その駅がある路線のIDを `LINE_ORDER` の順に返す。お気に入り駅を押したときに、どの路線へ切り替えるかを決めるのに使う。 |
+| `stationIdsMatching(query)` | `export function` | 駅名にその文字を含む駅のIDを返す。リールの検索で使う。「新宿駅」のように最後に「駅」が付いていても探せる。 |
 | `GENRES` | `export const` (array) | ジャンル一覧（家系・二郎系・醤油・味噌・塩・つけ麺・その他）。路線図とは別データだが同ファイルに定義。 |
 
 ## src/components/LineMap.jsx

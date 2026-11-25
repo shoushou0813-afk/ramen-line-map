@@ -178,7 +178,7 @@ export default function PostForm({ session, stationId, onPosted, post = null, on
         disabled={!loggedIn || saving}
       />
       <label className="image-pick" htmlFor={`image-${post?.id ?? "new"}`}>
-        {imagePreview ? "写真を選び直す" : "写真を選ぶ（なくてもよい）"}
+        {imagePreview ? "写真を選び直す" : "写真を選ぶ"}
       </label>
 
       {imagePreview && <img className="form-image-preview" src={imagePreview} alt="プレビュー" />}

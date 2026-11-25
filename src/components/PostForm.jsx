@@ -11,7 +11,7 @@ function validateInput({ shopName, rating, visitedOn }) {
 }
 
 // post を渡すと、その投稿を編集するフォームになる（入力欄に今の内容が入り、保存で上書きする）
-export default function PostForm({ session, stationId, onPosted, post = null, onCancel }) {
+export default function PostForm({ session, stationId, onPosted, post = null, onCancel, onSignIn }) {
   const editing = Boolean(post);
   const [shopName, setShopName] = useState(post?.shop_name ?? "");
   const [genre, setGenre] = useState(post?.genre ?? GENRES[0]);
@@ -90,11 +90,27 @@ export default function PostForm({ session, stationId, onPosted, post = null, on
     onPosted();
   }
 
+  // ログインしていないときは押せない入力欄を並べず、ログインへの案内だけを出す
+  if (!loggedIn && !editing) {
+    return (
+      <div className="form">
+        <div className="login-prompt">
+          <p>
+            <span>Googleアカウントで</span>
+            <span>ログインすると、</span>
+            <span>記録できます。</span>
+          </p>
+          <button className="button primary" onClick={onSignIn}>
+            ログインして記録する
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="form">
       <h3 className="form-title">{editing ? "記録を編集" : "投稿する"}</h3>
-
-      {!loggedIn && <p className="notice">投稿するにはログインしてください</p>}
 
       <input
         className="input"
@@ -154,12 +170,16 @@ export default function PostForm({ session, stationId, onPosted, post = null, on
       />
 
       <input
+        id={`image-${post?.id ?? "new"}`}
         className="image-input"
         type="file"
         accept="image/*"
         onChange={handleImageChange}
         disabled={!loggedIn || saving}
       />
+      <label className="image-pick" htmlFor={`image-${post?.id ?? "new"}`}>
+        {imagePreview ? "写真を選び直す" : "写真を選ぶ（なくてもよい）"}
+      </label>
 
       {imagePreview && <img className="form-image-preview" src={imagePreview} alt="プレビュー" />}
       {editing && imagePreview && (

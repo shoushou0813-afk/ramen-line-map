@@ -181,35 +181,36 @@ export default function App() {
   return (
     <div className="page">
       <header className="header">
+        <div className="top-bar">
+          {!session && (
+            <button className="login-corner" onClick={signIn}>
+              ログイン
+            </button>
+          )}
+        </div>
         <h1 className="title">ラーメン路線図マップ</h1>
-        <p className="lead">駅を選ぶと、その駅周辺のラーメン記録を見られます。</p>
+        <p className="lead">
+          <span>駅を選ぶと、</span>
+          <span>その駅周辺の</span>
+          <span>ラーメン記録を見られます。</span>
+        </p>
 
-        <nav className="tabs">
-          {MODES.map((m) => (
-            <button
-              key={m.id}
-              className={mode === m.id ? "tab is-active" : "tab"}
-              onClick={() => setMode(m.id)}
-            >
-              {m.label}
-            </button>
-          ))}
-        </nav>
+        {mode === "map" && (
+          <nav className="tabs" aria-label="路線">
+            {LINE_ORDER.map((id) => (
+              <button
+                key={id}
+                className={lineId === id ? "tab is-active" : "tab"}
+                onClick={() => setLineId(id)}
+              >
+                {LINES[id].name}
+              </button>
+            ))}
+          </nav>
+        )}
 
-        <nav className="tabs">
-          {LINE_ORDER.map((id) => (
-            <button
-              key={id}
-              className={lineId === id ? "tab is-active" : "tab"}
-              onClick={() => setLineId(id)}
-            >
-              {LINES[id].name}
-            </button>
-          ))}
-        </nav>
-
-        <div className="auth">
-          {session ? (
+        {session && (
+          <div className="auth">
             <NameEditor
               user={session.user}
               badge={<RankBadge genreCounts={userGenreCounts[session.user.id]} showTitle={false} />}
@@ -219,12 +220,8 @@ export default function App() {
                 ログアウト
               </button>
             </NameEditor>
-          ) : (
-            <button className="tab" onClick={signIn}>
-              Googleでログイン
-            </button>
-          )}
-        </div>
+          </div>
+        )}
       </header>
 
       {countsError && <p className="error">{countsError}</p>}
@@ -249,6 +246,7 @@ export default function App() {
           </section>
 
           <StationPanel
+            onSignIn={signIn}
             stationId={stationId}
             posts={posts}
             session={session}
@@ -294,6 +292,19 @@ export default function App() {
       )}
 
       <BackToTop />
+
+      <nav className="bottom-nav" aria-label="画面の切り替え">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            className={mode === m.id ? "bottom-nav-item is-active" : "bottom-nav-item"}
+            onClick={() => setMode(m.id)}
+            aria-current={mode === m.id ? "page" : undefined}
+          >
+            {m.label}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { stationName } from "../data/lines";
 import { MAX_FAVORITES } from "../lib/api/favorites";
 
 // favorite は、ログインしているときだけ渡される { on, canAdd, saving, error, onToggle }
-export default function StationPanel({ stationId, posts, session, userGenreCounts, onChanged, favorite }) {
+export default function StationPanel({ stationId, posts, session, userGenreCounts, onChanged, favorite, onSignIn }) {
   return (
     <section className="card">
       <h2 className="card-title">{stationName(stationId)}駅周辺</h2>
@@ -24,7 +24,7 @@ export default function StationPanel({ stationId, posts, session, userGenreCount
           {favorite.error && <p className="error">{favorite.error}</p>}
         </div>
       )}
-      <PostForm session={session} stationId={stationId} onPosted={onChanged} />
+      <PostForm session={session} stationId={stationId} onPosted={onChanged} onSignIn={onSignIn} />
       <PostList posts={posts} session={session} userGenreCounts={userGenreCounts} onChanged={onChanged} />
     </section>
   );

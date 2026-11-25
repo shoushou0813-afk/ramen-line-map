@@ -1,24 +1,31 @@
-/* 見た目は元のサイトに寄せている。
+/* デザイン: 骨組み=1列(路線図→駅の記録)・下にタブ / 雰囲気=駅の案内サイン風 / フォント=Zen Kaku Gothic New
+   決まりは design-tokens.yaml にある。変えるときはそちらを先に直す。
    スマホで見る前提なので、幅は 560px で頭打ちにして中央寄せ。 */
 
 :root {
-  /* 色はすべてここで決め、下ではこの名前だけを使う */
+  /* 色はすべてここで決め、下ではこの名前だけを使う(design-tokens.yaml と同じ値) */
+  --sign: #1b2a4a;
+  --sign-text: #fff;
+  --sign-muted: #c9d2e3;
+  --sign-edge: #55688f;
+  --sign-nav: #a9b4ca;
   --accent: #c94a24;
   --on-accent: #fff;
-  --link: #2563eb;
-  --line: #1a1a1a;
-  --border: #e5e5e5;
-  --muted: #767676;
-  --chip: #f0f0f0;
+  --link: #1b2a4a;
+  --line: #1b2a4a;
+  --border: #d5d9e0;
+  --muted: #5b6475;
+  --chip: #eef1f5;
   --paper: #fff;
-  --surface: #f7f7f7;
-  --ink: #111;
-  --ink-2: #333;
-  --ink-3: #444;
+  --surface: #f3f5f8;
+  --ink: #1b2a4a;
+  --ink-2: #2c3a57;
+  --ink-3: #3d4a64;
   --danger: #c0392b;
-  /* 選んでいない☆・写真欄の点線は、白との差を 3:1 以上にする */
-  --control-edge: #8c8c8c;
+  --control-edge: #8792a6;
   --shadow: rgba(0, 0, 0, 0.25);
+  --radius: 4px;
+  --font: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
 }
 
 * {
@@ -33,9 +40,9 @@ body {
 
 body {
   margin: 0;
-  background: var(--paper);
+  background: var(--surface);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -774,4 +781,109 @@ textarea:focus-visible {
 .bottom-nav-item,
 .login-corner {
   white-space: nowrap;
+}
+
+/* ===== 駅の案内サイン風 ===== */
+/* 上の見出しは、駅の看板のように濃い紺の帯に白い太字で */
+.header {
+  background: var(--sign);
+  color: var(--sign-text);
+  margin: -16px -16px 16px;
+  padding: 16px 16px 20px;
+  text-align: left;
+}
+
+.title {
+  color: var(--sign-text);
+  font-weight: 900;
+  font-size: 30px;
+  letter-spacing: 0;
+  margin: 4px 0;
+}
+
+.lead {
+  color: var(--sign-muted);
+  text-align: left;
+}
+
+.header .login-corner,
+.header .tab {
+  background: transparent;
+  color: var(--sign-text);
+  border-color: var(--sign-edge);
+}
+
+.tab {
+  border-radius: var(--radius);
+  font-weight: 700;
+}
+
+.header .tab.is-active {
+  background: var(--sign-text);
+  color: var(--sign);
+  border-color: var(--sign-text);
+}
+
+.header .auth-name {
+  color: var(--sign-text);
+}
+
+/* カードは角を小さくし、上に紺の太線を1本 */
+.card {
+  border: none;
+  border-top: 6px solid var(--sign);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.card-title {
+  text-align: left;
+  font-weight: 900;
+}
+
+.map-frame {
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.map-line {
+  stroke-width: 7;
+}
+
+.map-circle {
+  stroke-width: 4;
+}
+
+.map-name {
+  font-weight: 700;
+  fill: var(--ink);
+}
+
+.button.primary,
+.button.wide,
+.input,
+.image-pick,
+.favorite {
+  border-radius: var(--radius);
+}
+
+.tag {
+  border-radius: 2px;
+  background: var(--sign);
+  color: var(--sign-text);
+}
+
+/* 下のタブも紺の帯にし、選んでいる画面は白い文字と朱色の線 */
+.bottom-nav {
+  background: var(--sign);
+  border-top: none;
+}
+
+.bottom-nav-item {
+  color: var(--sign-nav);
+}
+
+.bottom-nav-item.is-active {
+  color: var(--sign-text);
+  border-top-color: var(--accent);
 }
